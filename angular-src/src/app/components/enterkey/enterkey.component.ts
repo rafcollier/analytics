@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {AuthService} from '../../services/auth.service';
 
 @Component({
   selector: 'app-enterkey',
@@ -7,13 +8,25 @@ import { Component, OnInit } from '@angular/core';
 })
 export class EnterkeyComponent implements OnInit {
 
-  constructor() { }
+  constructor(
+     private authService: AuthService
+
+  	) { }
 
   ngOnInit() {
   }
 
   onAnalyticsSubmit() {
+
   	console.log("Calling Google Analytics API for give key and view id");
+  	this.authService.getGoogleData().subscribe(data => {
+  	  //console.log(profile.user.username);	
+  	  console.log(data);
+	},
+	err => {
+	  console.log(err);
+ 	  return false;
+ 	});
   }
 
 }
