@@ -8,13 +8,19 @@
     "start": "node app"
   },
   "dependencies": {
+    "@types/gapi": "0.0.32",
+    "@types/gapi.auth2": "0.0.37",
+    "angularfire2": "^4.0.0-rc.0",
     "bcryptjs": "*",
     "body-parser": "*",
     "cors": "*",
     "express": "*",
-    "googleapis": "^19.0.0",
+    "firebase": "^4.0.0",
+    "googleapis": "*",
+    "install": "^0.10.1",
     "jsonwebtoken": "*",
     "mongoose": "*",
+    "npm": "^4.6.1",
     "passport": "*",
     "passport-jwt": "*"
   },

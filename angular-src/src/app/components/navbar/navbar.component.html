@@ -7,12 +7,12 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a (click)="onRefreshHome()" class="navbar-brand" href="#">Google Analytics Dashboard</a>
+          <a (click)="onRefreshHome()" class="navbar-brand" href=" ">Google Analytics Dashboard</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse" [ngClass]="{'in': isIn}">
           
           <ul class="nav navbar-nav navbar-right">
-            <li [routerLinkActive] = "['active']" [routerLinkActiveOptions] = "{exact:true}"> <a (click)="onRefreshHome()" [routerLink]="['/']">Home</a></li>
+            <li [routerLinkActive] = "['active']" [routerLinkActiveOptions] = "{exact:true}"> <a (click)="onRefreshHome()" [routerLink]="['/dummy']">Home</a></li>
             <li *ngIf="!authService.loggedIn()" [routerLinkActive] = "['active']" [routerLinkActiveOptions] = "{exact:true}"> <a [routerLink]="['/login']">Login</a></li>
             <li *ngIf="!authService.loggedIn()" [routerLinkActive] = "['active']" [routerLinkActiveOptions] = "{exact:true}"> <a [routerLink]="['/register']">Register</a></li>
             <li *ngIf="authService.loggedIn()"> <a (click)="onLogoutClick()" href="">Logout</a></li>

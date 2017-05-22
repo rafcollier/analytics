@@ -46,7 +46,9 @@ export class AuthService {
       .map(res => res.json());
   } 
 
-  getGoogleData() {
+  getGoogleData(date1, date2, accessToken) {
+
+    //https://ga-dev-tools.appspot.com/query-explorer/
     //CMAJ News View ID: 132388667
     //API Key AIzaSyBS5ejYLbOlWpV17VtfKtyemnZSaS0tGso
     //Generate API request from : https://ga-dev-tools.appspot.com/query-explorer/ 
@@ -57,9 +59,11 @@ export class AuthService {
     //return this.http.get('users/profile', {headers: headers}) //add this for local dev: http://localhost:3000/
     //return this.http.get('http://localhost:3000/users/profile', {headers: headers}) //add this for local dev: http://localhost:3000/
     //return this.http.get('https://jsonplaceholder.typicode.com/posts'); //fate JSON data for testing
+   // return this.http.get('https://www.googleapis.com/analytics/v3/data/ga?ids=ga%3A132388667&start-date=2017-04-01&end-date=2017-04-30&metrics=ga%3Apageviews&access_token=ya29.GltRBLpCGlJYwPCu9675et_cC_aXM80On1X_ThMrcMcDrjLeSUinatC7q1mauQQJvBrxVopK328y6sLXZfmbWaWoQVniceo0Wryu-Atofny4PPcjt7FvficbHH0S')
+    return this.http.get('https://www.googleapis.com/analytics/v3/data/ga?ids=ga%3A132388667&start-date=' + date1 + '&end-date=' + date2 + '&metrics=ga%3Apageviews&access_token=' + accessToken)
 
-    return this.http.get ('https://www.googleapis.com/analytics/v3/data/ga?ids=ga%3A132388667&start-date=2017-04-01&end-date=2017-04-30&metrics=ga%3Apageviews&access_token=ya29.Gl1NBDjsb3W8R9z84Hhijw9XQj4rRKSikTdPySgHTX6Ww3QKQA-ff-OjNPQTwXnpRivhwaSqxPtfQSTS3x3G51XntpgQ-LFJKfxMlQCk_lHsXbTvdnGhXpkXvSW72oY');
-      //.map(res => res.json());
+    //return this.http.get('https://www.googleapis.com/analytics/v3/data/ga?ids=ga%3A132388667&start-date=' + date1 + '&end-date=' + date2 + '&metrics=ga%3Apageviews&access_token=' + accessToken;
+      .map(res => res.json());
   } 
 
   loadToken(){
