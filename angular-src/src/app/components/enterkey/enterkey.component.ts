@@ -47,11 +47,34 @@ export class EnterkeyComponent implements AfterViewInit {
         console.log('Name: ' + profile.getName());
         console.log('Image URL: ' + profile.getImageUrl());
         console.log('Email: ' + profile.getEmail());
-        this.onAnalyticsSubmit(accessToken);
 
-      }, function (error) {
+        const date1 = "2017-04-01";
+        const date2 = "2017-04-30";
+        const date3 = "2017-03-01";
+        const date4 = "2017-03-31";
+
+        const metric1 = 'pageviews';
+        const metric2 = 'uniquePageviews';
+        const dimension = 'pagePath';
+        const sort = 'uniquePageviews';
+        const max = '10';
+
+        const CMAJNewsViewID = '132388667';
+        const CMAJBlogsViewID = '86326441';
+
+        this.onAnalyticsSubmit(date1, date2, metric1, accessToken, CMAJNewsViewID);
+        this.onAnalyticsSubmit(date3, date4, metric1, accessToken, CMAJNewsViewID);
+        this.onAnalyticsSubmit(date1, date2, metric1, accessToken, CMAJBlogsViewID);
+        this.onAnalyticsSubmit(date3, date4, metric1, accessToken, CMAJBlogsViewID);
+
+        this.onUniquePageviewsSubmit(date1, date2, metric2, dimension, sort, max, accessToken, CMAJNewsViewID);
+        this.onUniquePageviewsSubmit(date3, date4, metric2, dimension, sort, max, accessToken, CMAJNewsViewID);
+        this.onUniquePageviewsSubmit(date1, date2, metric2, dimension, sort, max, accessToken, CMAJBlogsViewID);
+        this.onUniquePageviewsSubmit(date3, date4, metric2, dimension, sort, max, accessToken, CMAJBlogsViewID);
+
+    }, function (error) {
         console.log(JSON.stringify(error, undefined, 2));
-      });
+    });
   }
 
 
@@ -66,17 +89,16 @@ export class EnterkeyComponent implements AfterViewInit {
   }
 
 
-  public onAnalyticsSubmit(accessToken) {
-    const date1 = "2017-04-01";
-    const date2 = "2017-04-30";
+  public onAnalyticsSubmit(date1, date2, metric1, accessToken, viewID) {
+  
 
     console.log(accessToken + date1 + date2);
     
   	//console.log("Calling Google Analytics API for give key and view id");
-  	this.authService.getGoogleData(date1, date2, accessToken).subscribe(data => {
-      console.log(data);
+  	this.authService.getGoogleData(date1, date2, metric1, accessToken, viewID).subscribe(data => {
+      //console.log(data);
   	  console.log(data.id);
-      console.log(data.totalsForAllResults);
+      //console.log(data.totalsForAllResults);
       console.log(data.totalsForAllResults["ga:pageviews"]);
 	  },
 	  err => {
@@ -84,6 +106,26 @@ export class EnterkeyComponent implements AfterViewInit {
  	    return false;
  	  });
   }
+
+  public onUniquePageviewsSubmit(date1, date2, metric, dimension, sort, max, accessToken, viewID) {
+
+    this.authService.getUniquePageviews(date1, date2, metric, dimension, sort, max, accessToken, viewID).subscribe(data => {
+      //console.log(data);
+      console.log(data.id);
+      //console.log(data.rows);
+      console.log(data.rows[0][0]);
+      console.log(data.rows[1][0]);
+      console.log(data.rows[2][0]);
+      console.log(data.rows[3][0]);
+      console.log(data.rows[4][0]);
+    },
+    err => {
+      console.log(err);
+       return false;
+     });
+  }
+ 
+
 
 
 }
