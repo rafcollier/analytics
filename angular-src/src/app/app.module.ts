@@ -19,6 +19,7 @@ import { HomeComponent } from './components/home/home.component';
 import { DummyComponent } from './components/dummy/dummy.component';
 import { AboutComponent } from './components/about/about.component';
 import { EnterkeyComponent } from './components/enterkey/enterkey.component';
+import { BarchartComponent } from './components/barchart/barchart.component';
 
 const appRoutes: Routes = [
   {path: '', component: HomeComponent},
@@ -26,6 +27,7 @@ const appRoutes: Routes = [
   {path: 'about', component: AboutComponent},
   {path: 'dummy', component: DummyComponent},
   {path: 'enterkey', component: EnterkeyComponent, canActivate:[AuthGuard]},
+  {path: 'barchart', component: BarchartComponent, canActivate:[AuthGuard]},
   {path: 'login', component: LoginComponent}
 ]
 
@@ -38,7 +40,8 @@ const appRoutes: Routes = [
     HomeComponent,
     DummyComponent,
     AboutComponent,
-    EnterkeyComponent
+    EnterkeyComponent,
+    BarchartComponent
   ],
   imports: [
     BrowserModule,
