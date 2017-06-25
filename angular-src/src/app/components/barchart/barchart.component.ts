@@ -25,6 +25,7 @@ export class BarchartComponent implements OnInit {
   private yAxis: any;
   private sub: any;
   pageviews: Array<any>; 
+  topPages: Array<any>;
   
 
   constructor(
@@ -48,8 +49,10 @@ export class BarchartComponent implements OnInit {
     const metric2 = 'uniquePageviews';
     const dimension = 'pagePath';
     const sort = 'uniquePageViews';
-    const max = 10;
+    const max = 5;
 
+
+    //Get form data passed in from enterkey component as routing parameters
     this.sub = this.route
     .queryParams
     .subscribe(params => {
@@ -71,25 +74,25 @@ export class BarchartComponent implements OnInit {
     }
 
     this.onAnalyticsSubmit(startDate, endDate, metric1, token, views);
-    //this.onUniquePageviewsSubmit(startDate, endDate, metric2, dimension, sort, max, token, views);
+    this.onUniquePageviewsSubmit(startDate, endDate, metric2, dimension, sort, max, token, views);
   }
 
   public onAnalyticsSubmit(date1, date2, metric1, accessToken, views) {
-   // console.log("Calling Google Analytics API for total pageviews");
-    let pageCountArray = [];
+    let profileCountArray = [];
     let count = 0;
     for(let i=0; i<views.length; i++) {
+      let pageviewObject =
+      {
+        name: "",
+        views: 0 
+      }; 
       this.authService.getGoogleData(date1, date2, metric1, accessToken, views[i]).subscribe(data => {
-        let pageViews = parseInt(data.totalsForAllResults["ga:pageviews"]);
-        console.log(pageViews);
-        console.log(typeof(pageViews));
-        pageCountArray.push(pageViews);
-        console.log(pageCountArray);
+        pageviewObject.name = data.profileInfo["profileName"];
+        pageviewObject.views = parseInt(data.totalsForAllResults["ga:pageviews"]);
+        profileCountArray.push(pageviewObject);
         count++;
-        console.log(count);
-        if(count == 3) { 
-          this.pageviews = pageCountArray;
-          //console.log(this.pageviews);
+        if(count == views.length) { 
+          this.pageviews = profileCountArray;
           this.createChart();
         }
       },
@@ -100,8 +103,65 @@ export class BarchartComponent implements OnInit {
     }
   }
 
+  public onUniquePageviewsSubmit(date1, date2, metric, dimension, sort, max, accessToken, views) {
+    let topPagesArray = [];
+    let count = 0;
+    for(let i=0; i<views.length; i++) {
+      let topPagesObject = 
+        {
+          name: "",
+          page1: "",
+          page1Views: 0,
+          page2: "",
+          page2Views: 0,
+          page3: "",
+          page3Views: 0,
+          page4: "",
+          page4Views: 0,
+          page5: "",
+          page5Views: 0,
+        }
+      this.authService.getUniquePageviews(date1, date2, metric, dimension, sort, max, accessToken, views[i]).subscribe(data => {
+        console.log(data);
+        //console.log(data.rows);
 
+        topPagesObject.name = data.profileInfo["profileName"];
+        topPagesObject.page1 = data.rows[0][0];
+        topPagesObject.page1Views = data.rows[0][1];
+        topPagesObject.page2 = data.rows[1][0];
+        topPagesObject.page2Views = data.rows[1][1];
+        topPagesObject.page3 = data.rows[2][0];
+        topPagesObject.page3Views = data.rows[2][1];
+        topPagesObject.page4 = data.rows[3][0];
+        topPagesObject.page4Views = data.rows[3][1];
+        topPagesObject.page5 = data.rows[4][0];
+        topPagesObject.page5Views = data.rows[4][1];
 
+        topPagesArray.push(topPagesObject);
+        count++;
+        console.log(count);
+        if(count == views.length) {
+          this.topPages = topPagesArray;
+          console.log(this.topPages);
+        }
+        //console.log(data.profileInfo["profileName"]);
+        //console.log(data.rows[0][0]);
+        //console.log(data.rows[1][0]);
+        //console.log(data.rows[2][0]);
+        //console.log(data.rows[3][0]);
+        //console.log(data.rows[4][0]);
+        //console.log(data.rows[5][0]);
+        //console.log(data.rows[6][0]);
+        //console.log(data.rows[7][0]);
+        //console.log(data.rows[8][0]);
+        //console.log(data.rows[9][0]);
+      },
+      err => {
+        console.log(err);
+        return false;
+       });
+    }
+  }
 
 
   //public onAnalyticsSubmit(date1, date2, metric1, accessToken, viewID) {
@@ -119,49 +179,13 @@ export class BarchartComponent implements OnInit {
    //  });
   //}
 
-  public onUniquePageviewsSubmit(date1, date2, metric, dimension, sort, max, accessToken, views) {
-    //console.log("Calling Google Analytics API for top 10 page by pageview");
-
-    for(let i=0; i<views.length; i++) {
-      this.authService.getUniquePageviews(date1, date2, metric, dimension, sort, max, accessToken, views[i]).subscribe(data => {
-        //console.log(data);
-        //console.log(data.id);
-        //console.log(data.rows);
-        console.log(data.profileInfo["profileName"]);
-        console.log(data.rows[0][0]);
-        console.log(data.rows[1][0]);
-        console.log(data.rows[2][0]);
-        console.log(data.rows[3][0]);
-        console.log(data.rows[4][0]);
-        console.log(data.rows[5][0]);
-        console.log(data.rows[6][0]);
-        console.log(data.rows[7][0]);
-        console.log(data.rows[8][0]);
-        console.log(data.rows[9][0]);
-      },
-      err => {
-        console.log(err);
-        return false;
-       });
-    }
-  }
-
+  
 
 
 
   createChart() {
 
     console.log("in createChart");
-
-    console.log(this.pageviews);
-    console.log(typeof(this.pageviews[0]));
-    console.log(this.data);
-    console.log(typeof(this.data[0]));
-
-  
-    
-
-
 
     let element1 = this.chartContainer1.nativeElement;
     let element2 = this.chartContainer2.nativeElement;
@@ -179,7 +203,7 @@ export class BarchartComponent implements OnInit {
 
 
     svg1.selectAll("rect")
-      .data(this.pageviews)
+      .data(this.data)
       .enter()
       .append("rect")
       .attr("x", function(d, i) {
@@ -192,7 +216,7 @@ export class BarchartComponent implements OnInit {
       .attr("height", function(d) {
         return d * 4;
       })
-      .attr("fill", "teal");
+      .attr("fill", "red");
 
       svg2.selectAll("rect")
       .data(this.data)
@@ -208,7 +232,7 @@ export class BarchartComponent implements OnInit {
       .attr("height", function(d) {
         return d * 4;
       })
-      .attr("fill", "teal");
+      .attr("fill", "green");
 
 
     // chart plot area

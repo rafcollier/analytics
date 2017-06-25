@@ -2,3 +2,22 @@
 <div id = "chart2" class="d3-chart" #chart2></div>
 
 
+<div *ngFor="let pageview of pageviews; let i = index">
+  <h5>{{ pageview.name }} : {{ pageview.views }}</h5>
+</div>
+<br><br>
+
+<div *ngFor="let topPage of topPages; let i = index">
+  <h5>{{ topPage.name }}</h5><br>
+  <h5>{{ topPage.page1 }} : {{ topPage.page1Views }} </h5>
+  <h5>{{ topPage.page2 }} : {{ topPage.page2Views }} </h5>
+  <h5>{{ topPage.page3 }} : {{ topPage.page3Views }} </h5>
+  <h5>{{ topPage.page4 }} : {{ topPage.page4Views }} </h5>
+  <h5>{{ topPage.page5 }} : {{ topPage.page5Views }} </h5>
+  <br><br>
+</div>
+
+
+
+
+
