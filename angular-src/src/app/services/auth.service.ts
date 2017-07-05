@@ -50,6 +50,7 @@ export class AuthService {
 
     //https://ga-dev-tools.appspot.com/query-explorer/
     //Generate API request from : https://ga-dev-tools.appspot.com/query-explorer/ 
+    console.log("in AuthServices getGoogleData");
     let headers = new Headers();
     this.loadToken();
     headers.append('Authorization', this.authToken);

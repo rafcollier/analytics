@@ -1,9 +1,9 @@
 <div id = "chart1" class="d3-chart" #chart1></div>
-<div id = "chart2" class="d3-chart" #chart2></div>
+ <!-- <div id = "chart2" class="d3-chart" #chart2></div> -->
 
 
 <div *ngFor="let pageview of pageviews; let i = index">
-  <h5>{{ pageview.name }} : {{ pageview.views }}</h5>
+  <h5>{{pageview.month}} : {{ pageview.name }} : {{ pageview.views }}</h5>
 </div>
 <br><br>
 
