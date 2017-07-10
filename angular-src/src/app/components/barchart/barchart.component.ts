@@ -14,7 +14,7 @@ export class BarchartComponent implements OnInit {
   @ViewChild('chart1') private chartContainer1: ElementRef;
   @ViewChild('chart2') private chartContainer2: ElementRef;
   //data: Array<any> = [5, 12, 34, 56, 88];
-  data: Array<any> = [8593, 7710, 6786, 6476, 4389, 8305];
+  data: Array<any> = [8, 10, 6, 7, 15, 22];
   margin: any = { top: 20, bottom: 20, left: 20, right: 20};
   private chart: any;
   public width: number;
@@ -25,11 +25,12 @@ export class BarchartComponent implements OnInit {
   private xAxis: any;
   private yAxis: any;
   private sub: any;
-  pageviews: Array<any>;
+  pageviews: Array<any> = [];
+  currentView: String = "";
   pageviewsOnly = [];
   dateObj: Array<any>; 
   dateStr: Array<any>; 
-  topPages: Array<any>;
+  topPages: Array<any> = [];
   
   
 
@@ -80,6 +81,7 @@ export class BarchartComponent implements OnInit {
         views.push(viewID[i]);
       }
     }
+    console.log("Valid Views: " + views);
 
     //Find previous full months 
     let dateObjArrayFirst = []; 
@@ -100,11 +102,9 @@ export class BarchartComponent implements OnInit {
       dateStrArrayLast[i] = dateObjArrayLast[i].toISOString().substring(0,10);
     }
    
-    this.onAnalyticsSubmit(dateStrArrayFirst, dateStrArrayLast, metric1, token, views[1]);
+    this.onAnalyticsSubmit(dateStrArrayFirst, dateStrArrayLast, metric1, token, views[0]);
 
-    
-
-    //this.onUniquePageviewsSubmit(startDate, endDate, metric2, dimension, sort, max, token, views);
+    this.onUniquePageviewsSubmit(dateStrArrayFirst[0], dateStrArrayLast[0], metric2, dimension, sort, max, token, views[0]);
   }
 
 
@@ -162,10 +162,8 @@ export class BarchartComponent implements OnInit {
             return 0;
           });
           this.pageviews = pageviewArray;
-          for (var i = 0; i < pageviewArray.length; i++) {
-            this.pageviewsOnly[i] = parseInt(pageviewArray[i].views);
-          }
-          console.log(this.pageviewsOnly);
+          this.currentView = pageviewArray[0].name;
+          this.pageviewsOnly = this.pageviews.map(pageview => pageview.views);
           this.createChart();
         }
       },
@@ -178,72 +176,64 @@ export class BarchartComponent implements OnInit {
 
   
 
-  //public onUniquePageviewsSubmit(date1, date2, metric, dimension, sort, max, accessToken, views) {
-   // let topPagesArray = [];
-   // let count = 0;
-   // for(let i=0; i<views.length; i++) {
-   //   let topPagesObject = 
-   //     {
-   //       name: "",
-   //       page1: "",
-   //       page1Views: 0,
-   //       page2: "",
-   //       page2Views: 0,
-   //       page3: "",
-   //       page3Views: 0,
-   //       page4: "",
-   //       page4Views: 0,
-   //       page5: "",
-   //       page5Views: 0,
-   //     }
-   //   this.authService.getUniquePageviews(date1, date2, metric, dimension, sort, max, accessToken, views[i]).subscribe(data => {
-   //     console.log(data);
-   //     //console.log(data.rows);
+  public onUniquePageviewsSubmit(date1, date2, metric, dimension, sort, max, accessToken, views) {
+    let topPagesArray = [];
+    let count = 0;
+    let topPagesObject = 
+        {
+         name: "",
+          page1: "",
+          page1Views: 0,
+          page2: "",
+          page2Views: 0,
+          page3: "",
+          page3Views: 0,
+          page4: "",
+          page4Views: 0,
+          page5: "",
+          page5Views: 0,
+        };
+
+      this.authService.getUniquePageviews(date1, date2, metric, dimension, sort, max, accessToken, views).subscribe(data => {
+        console.log(data);
+        topPagesObject.name = data.profileInfo["profileName"];
+        topPagesObject.page1 = data.rows[0][0];
+        topPagesObject.page1Views = data.rows[0][1];
+        topPagesObject.page2 = data.rows[1][0];
+        topPagesObject.page2Views = data.rows[1][1];
+        topPagesObject.page3 = data.rows[2][0];
+        topPagesObject.page3Views = data.rows[2][1];
+        topPagesObject.page4 = data.rows[3][0];
+        topPagesObject.page4Views = data.rows[3][1];
+        topPagesObject.page5 = data.rows[4][0];
+        topPagesObject.page5Views = data.rows[4][1];
 //
-//        topPagesObject.name = data.profileInfo["profileName"];
-//        topPagesObject.page1 = data.rows[0][0];
-//        topPagesObject.page1Views = data.rows[0][1];
-//        topPagesObject.page2 = data.rows[1][0];
-//        topPagesObject.page2Views = data.rows[1][1];
-//        topPagesObject.page3 = data.rows[2][0];
-//        topPagesObject.page3Views = data.rows[2][1];
-//        topPagesObject.page4 = data.rows[3][0];
-//        topPagesObject.page4Views = data.rows[3][1];
-//        topPagesObject.page5 = data.rows[4][0];
-//        topPagesObject.page5Views = data.rows[4][1];
-//
-//        topPagesArray.push(topPagesObject);
-//        count++;
-//        console.log(count);
-//        if(count == views.length) {
-//          this.topPages = topPagesArray;
-//        }
-//      },
-//      err => {
-//        console.log(err);
-//        return false;
-//       });
-//    }
-//  }
+        topPagesArray.push(topPagesObject);
+        this.topPages = topPagesArray;
+      },
+      err => {
+        console.log(err);
+        return false;
+      });
+    }
 
   createChart() {
 
     console.log("in createChart");
 
-    let element1 = this.chartContainer1.nativeElement;
-    //let element2 = this.chartContainer2.nativeElement;
+    //let element1 = this.chartContainer1.nativeElement;
+   // let element2 = this.chartContainer2.nativeElement;
 
-    this.width = element1.offsetWidth - this.margin.left - this.margin.right;
-    this.height = element1.offsetHeight - this.margin.top - this.margin.bottom;
-
+    //this.width = element1.offsetWidth - this.margin.left - this.margin.right;
+    //this.height = element1.offsetHeight - this.margin.top - this.margin.bottom;
     //console.log(this.width);
     //console.log(this.height);
-    //console.log(element1.offsetWidth);
+   // console.log(element1.offsetWidth);
     //console.log(element1.offsetHeight);
 
-    let svg1 = d3.select(element1).append('svg')
-      .attr('width', element1.offsetWidth)
-      .attr('height', element1.offsetHeight);
+    //let svg1 = d3.select(element1).append('svg')
+     // .attr('width', element1.offsetWidth)
+     // .attr('height', element1.offsetHeight);
 
     //let svg2 = d3.select(element2).append('svg')
      // .attr('width', element2.offsetWidth)
@@ -251,45 +241,178 @@ export class BarchartComponent implements OnInit {
 
 
 
-   console.log(this.data);
-   console.log(this.pageviewsOnly);
+   //console.log(this.data);
+   //console.log(this.pageviewsOnly);
 
-    svg1.selectAll("rect")
+    //svg1.selectAll("rect")
      // .data(this.data)
-      .data(this.pageviewsOnly)
-      .enter()
-      .append("rect")
-      .attr("x", function(d, i) {
-        return (i * 65)  //Bar width of 20 plus 1 for padding
-      })
-      .attr("y", function(d) {
-        return element1.offsetHeight - (d * 0.001) ;  //Height minus data value
-      })
-      .attr("width", 60)
-      .attr("height", function(d) {
-        return (d * 0.001); 
-      })
-      .attr("fill", "red");
+     // .data(this.pageviewsOnly)
+     // .enter()
+     // .append("rect")
+     // .attr("x", function(d, i) {
+     //   return (i * 65)  //Bar width of 20 plus 1 for padding
+     // })
+     // .attr("y", function(d) {
+     //   return element1.offsetHeight - (d * 0.001) ;  //Height minus data value
+     // })
+     // .attr("width", 60)
+     // .attr("height", function(d) {
+     //   return (d * 0.001); 
+     // })
+     // .attr("fill", "red");
 
 
 
 
 
-      //svg2.selectAll("rect")
-      //.data(this.data)
-      //.enter()
-      //.append("rect")
-      //.attr("x", function(d, i) {
-      //  return (i * 21)  //Bar width of 20 plus 1 for padding
-      //})
-      //.attr("y", function(d) {
-      //  return element2.offsetHeight - d;  //Height minus data value
-      //})
-      //.attr("width", 20)
-      //.attr("height", function(d) {
-      //  return d * 4;
-      //})
-      //.attr("fill", "green");
+//      svg2.selectAll("rect")
+//      .data(this.data)
+//      .enter()
+//      .append("rect")
+//      .attr("x", function(d, i) {
+//        return (i * 21)  //Bar width of 20 plus 1 for padding
+//      })
+//      .attr("y", function(d) {
+//        return element2.offsetHeight - (d * 10);  //Height minus data value
+//      })
+//      .attr("width", 20)
+//      .attr("height", function(d) {
+//        return (d * 10);
+//      })
+//      .attr("fill", "green");
+
+
+
+
+
+      //d3.select("body").selectAll("p")
+       // .data(this.data)
+       // .enter()
+       // .append("p")
+       // //.text("New Paragraph");
+       // .text(function(d) {return d;})
+       // .style("color", "red");
+
+
+
+      //d3.select("body").selectAll("h4")
+       // .data(this.data)
+       // .enter()
+       // .append("h4")
+       // .text(function(d) {return d;});
+        //.attr("class", "bar");
+
+
+     // d3.select("body").selectAll(".somediv") //can't select DIV because already DIV in HTML
+      //  .data(this.pageviewsOnly)
+      //  .enter()
+      //  .append("div")
+      //  .attr("class", "bar")
+      //  .style("height", function(d) {
+      //    var barHeight = d * 0.001;
+      //    return barHeight + "px";
+      //  });
+
+
+
+      //var w = 500;
+      //var h = 50;
+
+      //var svg = d3.select("body")
+      //  .append("svg")
+      //  .attr("width", w)
+      //  .attr("height", h)
+//
+//      var circles = svg.selectAll("circle")  
+//        .data(this.data)
+//        .enter()
+//        .append("circle");
+//
+//      circles.attr('cx', function(d, i) {
+//        return (i * 50) + 25;
+//      })
+//      .attr("cy", h/2)
+//      .attr("r", function(d) {
+//        return d;
+//      })
+//      .attr("fill", "yellow");
+
+
+      var w = 500;
+      var h = 300;
+      var barPadding = 3;
+      //var dataset = this.pageviewsOnly;
+      var dataset = this.pageviews;
+
+      //var xscale = d3.scaleLinear()
+       // .domain([d3.min(dataset, function(d) { return d; }), d3.max(dataset, function(d) {return d;})])
+       // .range([0, w]);
+        
+      //var yscale = d3.scaleLinear()
+      //  .domain([d3.min(dataset, function(d) { return d; }), d3.max(dataset, function(d) {return d;})])
+      //  .range([0, h]);
+
+      var svg = d3.select("#barchart1")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h)
+        .attr("align", "center");
+
+
+      svg.selectAll("rect")  
+        .data(dataset)
+        .enter()
+        .append("rect")
+        .attr("x", function(d, i) {
+          return i * (w / dataset.length);
+        })
+        .attr("y", function(d) {
+          return h - (d.views * 0.02);
+        })
+        .attr("width", w /dataset.length - barPadding)
+        .attr("height", function(d) {
+          return (d.views * 0.02);
+        })
+        .attr("fill", "#DE8D47");
+      
+      svg.selectAll("text.values")
+        .data(dataset)
+        .enter()
+        .append("text")
+        .text(function(d) {
+          return (d.views * 0.001).toFixed(1);
+        })
+        .attr("x", function (d, i) {
+          return i * (w / dataset.length) + 25;
+        })
+        .attr("y", function (d) {
+          return h - (d.views * 0.02) + 25;
+        })
+        .attr("font-family", "arial")
+        .attr("font-size", "16px")
+        .attr("fill", "white");
+
+      svg.selectAll("text.labels")
+        .data(dataset)
+        .enter()
+        .append("text")
+        .text(function(d) {
+          return d.month.slice(0,7);
+        })
+        .attr("x", function (d, i) {
+          return i * (w / dataset.length) + 15;
+        })
+        .attr("y", function (d) {
+          return h - 20;
+        })
+        .attr("font-family", "arial")
+        .attr("font-size", "14px")
+        .attr("fill", "white");
+
+
+      
+
+
 
 
     // chart plot area

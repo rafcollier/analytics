@@ -1,6 +1,60 @@
+.flex-container {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /*border: 1px solid red;*/
+}
+
+.flex-container1 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  /*border: 1px solid red;*/
+}
+
+.flex-item1 {
+  padding: 5px;
+  margin: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 3em;
+  text-align: center;
+  /*border: 1px solid green;*/
+}
+
+.flex-item2 {
+  padding: 5px;
+  margin: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 3em;
+  text-align: left;
+  /*border: 1px solid green;*/
+}
+
+.row {
+    width: auto;
+    border: 1px solid blue;
+}
+
+.flex-item {
+  padding: 5px;
+  margin: 10px;
+  line-height: 50px;
+  color: white;
+  font-weight: bold;
+  font-size: 3em;
+  text-align: center;
+  border: 1px solid green;
+}
+
 .d3-chart {
-  width: 100%;
-  height: 400px;
+  width: 600px;
+  height: 0px;
 }
 
 .d3-chart .axis path,
@@ -10,4 +64,16 @@
 
 .d3-chart .axis text {
   fill: #999;
+}
+
+.grey-font {
+  color: #868685;
+}
+
+div.bar {
+    display: inline-block;
+    width: 20px;
+    height: 75px;   /* We'll override this later */
+    background-color: teal;
+    margin-right: 2px;
 }
