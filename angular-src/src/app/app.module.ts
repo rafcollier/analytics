@@ -13,32 +13,26 @@ import {AuthGuard} from './guards/auth.guard';
 
 import { AppComponent } from './app.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
 import { HomeComponent } from './components/home/home.component';
-import { DummyComponent } from './components/dummy/dummy.component';
 import { AboutComponent } from './components/about/about.component';
 import { EnterkeyComponent } from './components/enterkey/enterkey.component';
+import { BarchartComponent } from './components/barchart/barchart.component';
 
 const appRoutes: Routes = [
   {path: '', component: HomeComponent},
-  {path: 'register', component: RegisterComponent},
   {path: 'about', component: AboutComponent},
-  {path: 'dummy', component: DummyComponent},
-  {path: 'enterkey', component: EnterkeyComponent, canActivate:[AuthGuard]},
-  {path: 'login', component: LoginComponent}
+  {path: 'enterkey', component: EnterkeyComponent},
+  {path: 'barchart', component: BarchartComponent}
 ]
 
 @NgModule({
   declarations: [
     AppComponent,
     NavbarComponent,
-    LoginComponent,
-    RegisterComponent,
     HomeComponent,
-    DummyComponent,
     AboutComponent,
-    EnterkeyComponent
+    EnterkeyComponent,
+    BarchartComponent
   ],
   imports: [
     BrowserModule,

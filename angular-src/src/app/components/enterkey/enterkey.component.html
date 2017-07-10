@@ -1,13 +1,23 @@
-<div>
-  <h2 class="page-header blackfont">Enter API Keys and View IDs</h2>
-  <form (submit)="onAnalyticsSubmit()">
-    <div class="form-group">
-      <label>Google Analytics API key</label>
-      <input type="text" [(ngModel)]="bookTitle" name="apiKey" class="form-control margin-bottom">
-      <label>Analytics View ID </label>
-      <input type="text" [(ngModel)]="authorName" name="viewId" class="form-control margin-bottom">
-      <input type="submit" class="btn btn-default" value="Submit">
-    </div>
-  </form>
+<h2>Client ID and View IDs</h2>
 
-</div>
+<form (submit)="onIdSubmit()">
+  <div class="form-group">
+    <p class="text-primary">Client ID</p>
+    <input type="text" [(ngModel)]="clientID" name="clientID" class="form-control margin-bottom">
+    <p class="text-primary">View ID #1</p>
+    <input type="text" [(ngModel)]="viewID1" name="viewID1" class="form-control margin-bottom">
+    <p class="text-primary">View ID #2</p>
+    <input type="text" [(ngModel)]="viewID2" name="viewID2" class="form-control margin-bottom">
+    <p class="text-primary">View ID #3</p>
+    <input type="text" [(ngModel)]="viewID3" name="viewID3" class="form-control margin-bottom">
+    <p class="text-primary">View ID #4</p>
+    <input type="text" [(ngModel)]="viewID4" name="viewID4" class="form-control margin-bottom">
+    <p class="text-primary">View ID #5</p>
+    <input type="text" [(ngModel)]="viewID5" name="viewID5" class="form-control margin-bottom">
+    <p class="text-primary">Start Date (format YYYY-MM-DD)</p>
+    <input type="text" [(ngModel)]="startDate" name="startDate" class="form-control margin-bottom">
+    <p class="text-primary">End Date (format YYYY-MM-DD)</p>
+    <input type="text" [(ngModel)]="endDate" name="endDate" class="form-control margin-bottom">
+    <input type="submit" class="btn btn-primary" value="Submit">
+  </div>
+</form>
