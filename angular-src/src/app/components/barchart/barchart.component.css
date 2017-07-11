@@ -17,12 +17,13 @@
 }
 
 .flex-item1 {
-  padding: 5px;
-  margin: 10px;
+  padding: 2px;
+  margin: 2px;
   color: white;
   font-weight: bold;
   font-size: 3em;
   text-align: center;
+  line-height: 30px;
   /*border: 1px solid green;*/
 }
 
