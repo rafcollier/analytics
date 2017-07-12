@@ -22,8 +22,8 @@ const mongoose = require('mongoose');
 const app = express();
 const users = require('./routes/users');
 
-const port = 3000; //This is port for local development
-//const port = process.env.PORT || 8080; //This is for deployment to Heroku
+//const port = 3000; //This is port for local development
+const port = process.env.PORT || 8080; //This is for deployment to Heroku
 
 //Middleware
 app.use(cors());
