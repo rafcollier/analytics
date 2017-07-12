@@ -13,8 +13,8 @@ const config = require('../../../../../config/google');
   encapsulation: ViewEncapsulation.None
 })
 export class BarchartComponent implements OnInit {
-  @ViewChild('chart1') private chartContainer1: ElementRef;
-  @ViewChild('chart2') private chartContainer2: ElementRef;
+  //@ViewChild('chart1') private chartContainer1: ElementRef;
+  //@ViewChild('chart2') private chartContainer2: ElementRef;
   //data: Array<any> = [5, 12, 34, 56, 88];
   data: Array<any> = [8, 10, 6, 7, 15, 22];
   margin: any = { top: 20, bottom: 20, left: 20, right: 20};
