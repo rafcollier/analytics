@@ -123,9 +123,10 @@ export class BarchartComponent implements OnInit {
 
   public onButtonOneClick() {
     console.log("Button One Clicked.");
+    this.showData = true;
     this.onAnalyticsSubmit(this.inputAll["views"][0]);
     this.onUniquePageviewsSubmit(this.inputAll["views"][0]);
-    this.showData = true;
+    
   }
 
   public onButtonTwoClick() {
@@ -166,9 +167,7 @@ export class BarchartComponent implements OnInit {
 
      this.authService.getGoogleData(this.inputAll["firstDays"][i], this.inputAll["lastDays"][i], this.inputAll["metric1"], this.inputAll["token"], view["id"]).subscribe(data => {
         count++;
-        console.log(data);
         pageviewArray.push({"pageName" : view["name"], "views": parseInt(data.totalsForAllResults["ga:pageviews"]), "month": data.query["start-date"]});
-   //     console.log(pageviewArray);
 
         //sort array if arrived out of sequence
         if(count == this.inputAll["firstDays"].length) {
@@ -179,17 +178,19 @@ export class BarchartComponent implements OnInit {
               return 1;
             return 0;
           });
+        console.log(pageviewArray); 
+        this.createChart(pageviewArray);
         }  
-          console.log(pageviewArray);
-          this.createChart(pageviewArray);
       },
       err => {
         console.log(err);
         return false;
       });
     }
+    //console.log(pageviewArray);
+    //let sortedArr = this.sortArr(pageviewArray); 
+    //return pageviewArray;
   }
-
 
   public onUniquePageviewsSubmit(view) {
     let topPagesArray = [];
@@ -215,9 +216,10 @@ export class BarchartComponent implements OnInit {
     }
   
 
-  public createChart(pageViewArray) {
+  public createChart(dataset) {
 
     console.log("in createChart");
+    console.log(dataset);
 
     //let element1 = this.chartContainer1.nativeElement;
    // let element2 = this.chartContainer2.nativeElement;
@@ -343,9 +345,9 @@ export class BarchartComponent implements OnInit {
       var barPadding = 3;
       //var dataset = this.pageviewsOnly;
       //var dataset = this.pageviews;
-      var dataset = pageViewArray;
-      console.log("dataset");
-      console.log(dataset);
+      //var dataset = pageViewArray;
+      //console.log("dataset");
+      //console.log(dataset);
 
       //var xscale = d3.scaleLinear()
        // .domain([d3.min(dataset, function(d) { return d; }), d3.max(dataset, function(d) {return d;})])
