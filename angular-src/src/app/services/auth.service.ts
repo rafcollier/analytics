@@ -11,7 +11,7 @@ export class AuthService {
   user: any;
 
   constructor(private http: Http) { }
-
+/*
 
   registerUser(user) {
     let headers = new Headers();
@@ -46,13 +46,15 @@ export class AuthService {
       .map(res => res.json());
   } 
 
+  */
+
   getGoogleData(date1, date2, metric1, accessToken, viewID) {
 
     //https://ga-dev-tools.appspot.com/query-explorer/
     //Generate API request from : https://ga-dev-tools.appspot.com/query-explorer/ 
     console.log("in AuthServices getGoogleData");
     let headers = new Headers();
-    this.loadToken();
+    //this.loadToken();
     headers.append('Authorization', this.authToken);
     headers.append('Content-Type', 'application/json');
     //return this.http.get('https://jsonplaceholder.typicode.com/posts'); //fate JSON data for testing
@@ -67,7 +69,7 @@ export class AuthService {
     //https://ga-dev-tools.appspot.com/query-explorer/
     //Generate API request from : https://ga-dev-tools.appspot.com/query-explorer/ 
     let headers = new Headers();
-    this.loadToken();
+    //this.loadToken();
     headers.append('Authorization', this.authToken);
     headers.append('Content-Type', 'application/json');
     //return this.http.get('https://jsonplaceholder.typicode.com/posts'); //fate JSON data for testing
@@ -76,6 +78,8 @@ export class AuthService {
 
       .map(res => res.json());
   } 
+
+  /*
 
   loadToken(){
     const token = localStorage.getItem('id_token');
@@ -91,6 +95,7 @@ export class AuthService {
  loggedIn() {
     return tokenNotExpired('id_token');
   }
+  */
 
 
 

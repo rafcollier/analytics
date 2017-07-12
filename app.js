@@ -20,7 +20,7 @@ const mongoose = require('mongoose');
 //})
 
 const app = express();
-const users = require('./routes/users');
+//const users = require('./routes/users');
 
 //const port = 3000; //This is port for local development
 const port = process.env.PORT || 8080; //This is for deployment to Heroku
@@ -32,10 +32,10 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use(passport.session());
 
-require('./config/passport')(passport);
+//require('./config/passport')(passport);
 
 //Routes
-app.use('/users', users);
+//app.use('/users', users);
 
 //Index Route
 app.get('/', (req, res) => {
