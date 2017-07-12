@@ -13,12 +13,12 @@ import { tokenNotExpired } from 'angular2-jwt';
   styleUrls: ['./enterkey.component.css']
 })
 export class EnterkeyComponent implements OnInit {
-  clientID: String;
-  viewID1: String;
-  viewID2: String;
-  viewID3: String;
-  viewID4: String;
-  viewID5: String;
+  //clientID: String;
+  //viewID1: String;
+  //viewID2: String;
+  //viewID3: String;
+  //viewID4: String;
+  //viewID5: String;
   startDate: String;
   endDate: String;
   token: String;
@@ -33,8 +33,6 @@ export class EnterkeyComponent implements OnInit {
     ) { }
 
   ngOnInit() {
-
-
   }
 
 
@@ -49,39 +47,24 @@ export class EnterkeyComponent implements OnInit {
     });
 
     const clientInfo = {
-      clientID: this.clientID,
-      viewID1: this.viewID1,
-      viewID2: this.viewID2,
-      viewID3: this.viewID3,
-      viewID4: this.viewID4,
-      viewID5: this.viewID5,
+      //clientID: this.clientID,
+      //viewID1: this.viewID1,
+      //viewID2: this.viewID2,
+      //viewID3: this.viewID3,
+      //viewID4: this.viewID4,
+      //viewID5: this.viewID5,
       startDate: this.startDate,
       endDate: this.endDate
     }
 
-    //console.log("In sentence submit with user :" + this.enteredBy + "with likes of:");
-
-    //Required fields
-    //if(!this.validateService.validateSentences(sentences)) {
-    //  this.flashMessage.show('Please fill in all fields', {cssClass: 'alert-danger', timeout: 3000});
-    //  return false;
-    //}
-
-    //Check success of write to database
-    //this.authService.submitSentences(sentences).subscribe(data => {
-    //this.bookTitle = "";
-    //this.authorName = "";
-    //this.firstSentence = "";
-    //this.lastSentence = "";
-
     this.router.navigate(['/barchart'], {queryParams: {
       token: this.token, 
-      clientID: clientInfo.clientID,
-      viewID1: clientInfo.viewID1,
-      viewID2: clientInfo.viewID2,
-      viewID3: clientInfo.viewID3,
-      viewID4: clientInfo.viewID4,
-      viewID5: clientInfo.viewID5,
+      //clientID: clientInfo.clientID,
+      //viewID1: clientInfo.viewID1,
+      //viewID2: clientInfo.viewID2,
+      //viewID3: clientInfo.viewID3,
+      //viewID4: clientInfo.viewID4,
+      //viewID5: clientInfo.viewID5,
       startDate: clientInfo.startDate,
       endDate: clientInfo.endDate
       }

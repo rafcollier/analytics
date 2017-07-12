@@ -4,6 +4,8 @@ import {Router} from '@angular/router';
 import {ActivatedRoute} from '@angular/router';
 import {AuthService} from '../../services/auth.service';
 
+const config = require('../../../../../config/google');
+
 @Component({
   selector: 'app-barchart',
   templateUrl: './barchart.component.html',
@@ -26,20 +28,10 @@ export class BarchartComponent implements OnInit {
   private yAxis: any;
   private sub: any;
 
-
-  inputData: Object = {};
+  showData = false;
+  inputAll = {};
   pageviews: Array<any> = [];
   topPages: Array<any> = [];
-  currentView: String = "";
-  //pageviewsOnly = [];
-  //dateObj: Array<any>; 
-  //dateStr: Array<any>; 
-  metric1 = 'pageviews';
-  metric2 = 'uniquePageviews';
-  dimension = 'pagePath';
-  sort = 'uniquePageViews';
-  max = 10;
-
   
   constructor(
     private router: Router,
@@ -48,77 +40,67 @@ export class BarchartComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.getInputData();
-  }
+   let inputObj = this.getInputData();
+   let firstDaysArr = this.getDates(inputObj["firstDay"]);
+   let lastDaysArr = this.getDates(inputObj["lastDay"]);
+   this.inputAll = {
+     "token": inputObj["token"],
+     "firstDays": firstDaysArr,
+     "lastDays": lastDaysArr,
+     "views" : [
+        {"name": config.name1, "id": config.viewID1}, 
+        {"name": config.name2, "id": config.viewID2}, 
+        {"name": config.name3, "id": config.viewID3}, 
+        {"name": config.name4, "id": config.viewID4}, 
+        {"name": config.name5, "id": config.viewID5} 
+     ],
+     "metric1": "pageviews",
+     "metric2": "uniquePageviews",
+     "dimension": "pagePath",
+     "sort": "uniquePageviews",
+     "max": 10
+   }
 
+   console.log(this.inputAll); 
+  }
+  
+
+  //Get form data passed in from enterkey component as routing parameters
   getInputData() {
     console.log("In getInputData");
-    let token = "";
-    let startDate = "";
-    let endDate = "";
-    let viewID = [];
-    let views = [];
-    
-    let inputObj = {};
-
-    //Get form data passed in from enterkey component as routing parameters
+    let dataInput = {};
     this.sub = this.route
     .queryParams
     .subscribe(params => {
-      token = params['token'];
-      startDate = params['startDate'];
-      endDate = params['endDate'];
-      viewID[0] = params['viewID1'];
-      viewID[1] = params['viewID2'];
-      viewID[2] = params['viewID3'];
-      viewID[3] = params['viewID4'];
-      viewID[4] = params['viewID5'];
+      dataInput["token"] = params['token'];
+      dataInput["firstDay"] = params['startDate'];
+      dataInput["lastDay"] = params['endDate'];
     });
+    return dataInput;
+  }
 
-
-    //Create array of the views entered in form 
-    for(var i = 0; i < viewID.length; i++) {
-      if(viewID[i] != undefined) {
-        views.push(viewID[i]);
+  //Get Array of 5 previous months (first or last days)
+  getDates(day) {
+    console.log("In getDates");
+    const num = 6;
+    let objArr = []; 
+    let strArr = []; 
+    strArr[0] = day;
+    objArr[0] = this.getDate(day);
+    for(var i = 1; i < num; i++) {
+      if(day.substr(8) == '01') { //First day of month
+        objArr[i] = this.prevMonthFirst(objArr[i-1]);
+      } else {
+        const firstDay = this.prevMonthFirst(this.getDate(strArr[i-1].substr(0,8).concat('01'))); //get first day previous month
+        objArr[i] = this.prevMonthLast(firstDay); //get last day previous month from the first day
       }
+      strArr[i] = objArr[i].toISOString().substr(0,10);
     }
-
-    //Find previous full months for 5 months 
-    let dateObjArrayFirst = []; 
-    let dateObjArrayLast = []; 
-    let dateStrArrayFirst = []; 
-    let dateStrArrayLast = []; 
-    dateStrArrayFirst[0] = startDate;
-    dateStrArrayLast[0] = endDate;
-    dateObjArrayFirst[0] = this.getDate(startDate);
-    dateObjArrayLast[0] = this.getDate(endDate);
-
-    const numMonths = 6;
-
-    for(var i = 1; i < numMonths; i++) {
-      dateObjArrayFirst[i] = this.prevMonthFirst(dateObjArrayFirst[i-1]);
-      dateObjArrayLast[i] = this.prevMonthLast(dateObjArrayFirst[i]); //Use first day of previous month to get last of that month
-      dateStrArrayFirst[i] = dateObjArrayFirst[i].toISOString().substring(0,10);
-      dateStrArrayLast[i] = dateObjArrayLast[i].toISOString().substring(0,10);
-    }
-
-    inputObj = {
-      "token": token,
-      "startDates": dateStrArrayFirst,
-      "endDates": dateStrArrayLast,
-      "views": views
-    }
-
-    this.inputData = inputObj;
-
-    console.log(this.inputData);
-
-    this.getGoogleData(this.inputData["views"][0]);
-
+    return strArr; 
   }
 
   //Create data object when passed a date string: YYYY-MM-DD
-  public getDate(date) {
+  getDate(date) {
     const year = parseInt(date.slice(0,4));
     const month = parseInt(date.slice(5,7));
     const days = parseInt(date.substr(8));
@@ -126,43 +108,70 @@ export class BarchartComponent implements OnInit {
     return newDate;
   }
 
-  //Calculate the previous month when passed a date object
-  public prevMonthFirst(date) {
+  //Calculate first day of the previous month when passed a date object
+  prevMonthFirst(date) {
     var firstDate = new Date (date.getFullYear(), date.getMonth() -1, 1);
     return firstDate;
   }
 
-  public prevMonthLast(date) {
+  //Calculate last day of the previous month when passed a date object
+  prevMonthLast(date) {
     var lastDate = new Date (date.getFullYear(), date.getMonth() + 1, 0);
     return lastDate;
   }
 
-  
-  getGoogleData(view){
 
-    console.log(view);
-    
-    this.onAnalyticsSubmit(this.inputData["startDates"], this.inputData["endDates"], this.metric1, this.inputData["token"], view);
-
-    //this.onUniquePageviewsSubmit(dateStrArrayFirst[0], dateStrArrayLast[0], metric2, dimension, sort, max, token, views[0]);
+  public onButtonOneClick() {
+    console.log("Button One Clicked.");
+    this.onAnalyticsSubmit(this.inputAll["views"][0]);
+    this.onUniquePageviewsSubmit(this.inputAll["views"][0]);
+    this.showData = true;
   }
 
+  public onButtonTwoClick() {
+    console.log("Button One Clicked.");
+    this.onAnalyticsSubmit(this.inputAll["views"][1]);
+    this.onUniquePageviewsSubmit(this.inputAll["views"][1]);
+    this.showData = true;
+  }
 
-  
+  public onButtonThreeClick() {
+    console.log("Button One Clicked.");
+    this.onAnalyticsSubmit(this.inputAll["views"][2]);
+    this.onUniquePageviewsSubmit(this.inputAll["views"][2]);
+    this.showData = true;
+  }
 
-  public onAnalyticsSubmit(date1, date2, metric1, accessToken, view) {
+  public onButtonFourClick() {
+    console.log("Button One Clicked.");
+    this.onAnalyticsSubmit(this.inputAll["views"][3]);
+    this.onUniquePageviewsSubmit(this.inputAll["views"][3]);
+    this.showData = true;
+  }
+
+  public onButtonFiveClick() {
+    console.log("Button One Clicked.");
+    this.onAnalyticsSubmit(this.inputAll["views"][4]);
+    this.onUniquePageviewsSubmit(this.inputAll["views"][4]);
+    this.showData = true;
+  }
+
+  public onAnalyticsSubmit(view) {
     console.log("In onAnalyticsSubmit");
+    console.log(view);
     var pageviewArray = [];
     var count = 0;
 
-    for (var i = 0; i < date1.length; i++) {
+    for (var i = 0; i < this.inputAll["firstDays"].length; i++) {
 
-      this.authService.getGoogleData(date1[i], date2[i], metric1, accessToken, view).subscribe(data => {
+     this.authService.getGoogleData(this.inputAll["firstDays"][i], this.inputAll["lastDays"][i], this.inputAll["metric1"], this.inputAll["token"], view["id"]).subscribe(data => {
         count++;
-        pageviewArray.push({"name" : data.profileInfo["profileName"], "views": parseInt(data.totalsForAllResults["ga:pageviews"]), "month": data.query["start-date"]});
+        console.log(data);
+        pageviewArray.push({"pageName" : view["name"], "views": parseInt(data.totalsForAllResults["ga:pageviews"]), "month": data.query["start-date"]});
+   //     console.log(pageviewArray);
 
         //sort array if arrived out of sequence
-        if(count == date1.length) {
+        if(count == this.inputAll["firstDays"].length) {
           pageviewArray.sort((a,b) => {
             if(a.month < b.month)
               return -1;
@@ -170,11 +179,9 @@ export class BarchartComponent implements OnInit {
               return 1;
             return 0;
           });
-          this.pageviews = pageviewArray;
-          this.currentView = data.profileInfo["profileName"];
-          console.log(this.currentView);
-          this.createChart();
-        }
+        }  
+          console.log(pageviewArray);
+          this.createChart(pageviewArray);
       },
       err => {
         console.log(err);
@@ -183,7 +190,8 @@ export class BarchartComponent implements OnInit {
     }
   }
 
-  public onUniquePageviewsSubmit(date1, date2, metric, dimension, sort, max, accessToken, views) {
+
+  public onUniquePageviewsSubmit(view) {
     let topPagesArray = [];
     let count = 0;
     let topPagesObject = 
@@ -192,9 +200,9 @@ export class BarchartComponent implements OnInit {
           views: "" 
         };
 
-    this.authService.getUniquePageviews(date1, date2, metric, dimension, sort, max, accessToken, views).subscribe(data => {
+    this.authService.getUniquePageviews(this.inputAll["firstDays"][0], this.inputAll["lastDays"][0], this.inputAll["metric2"], this.inputAll["dimension"], this.inputAll["sort"], this.inputAll["max"], this.inputAll["token"], view["id"]).subscribe(data => {
       console.log(data);
-      for(var i=0; i<max; i++) {
+      for(var i=0; i<this.inputAll["max"]; i++) {
         topPagesArray.push({"url": data.rows[i][0], "views": data.rows[i][1]}); 
       }
       this.topPages = topPagesArray;
@@ -205,29 +213,9 @@ export class BarchartComponent implements OnInit {
         return false;
       });
     }
+  
 
-  onButtonOneClick() {
-    console.log("Button One Clicked.");
-    this.getGoogleData(this.inputData["views"][0])
-  }
-
-  onButtonTwoClick() {
-    console.log("Button Two Clicked.");
-    this.getGoogleData(this.inputData["views"][1])
-  }
-
-  onButtonThreeClick() {
-    console.log("Button Three Clicked.");
-    this.getGoogleData(this.inputData["views"][2])
-  }
-
-  onButtonFourClick() {
-    console.log("Button Four Clicked.");
-    this.getGoogleData(this.inputData["views"][3])
-  }
-
-
-  createChart() {
+  public createChart(pageViewArray) {
 
     console.log("in createChart");
 
@@ -349,12 +337,15 @@ export class BarchartComponent implements OnInit {
 
      
       d3.select("svg").remove();
-      
+
       var w = 500;
-      var h = 300;
+      var h = 500;
       var barPadding = 3;
       //var dataset = this.pageviewsOnly;
-      var dataset = this.pageviews;
+      //var dataset = this.pageviews;
+      var dataset = pageViewArray;
+      console.log("dataset");
+      console.log(dataset);
 
       //var xscale = d3.scaleLinear()
        // .domain([d3.min(dataset, function(d) { return d; }), d3.max(dataset, function(d) {return d;})])
@@ -380,11 +371,33 @@ export class BarchartComponent implements OnInit {
           return i * (w / dataset.length);
         })
         .attr("y", function(d) {
-          return h - (d.views * 0.02);
+          if(d["pageName"] == "CMAJ News")
+            return h - (d["views"] * 0.035);
+          if(d["pageName"] == "CMAJ Blogs")
+            return h - (d["views"] * 0.05);
+          if(d["pageName"] == "CMAJ.CA")
+            return h - (d["views"] * 0.0015);
+          if(d["pageName"] == "CMAJ Open")
+            return h - (d["views"] * 0.025);
+          if(d["pageName"] == "CMAJ Mobile")
+            return h - (d["views"] * 0.0055);
+          else
+            return h - (d["views"] * 0.002);
         })
         .attr("width", w /dataset.length - barPadding)
         .attr("height", function(d) {
-          return (d.views * 0.02);
+          if(d["pageName"] == "CMAJ News")
+            return (d["views"] * 0.035);
+          if(d["pageName"] == "CMAJ Blogs")
+            return (d["views"] * 0.05);
+          if(d["pageName"] == "CMAJ.CA")
+            return (d["views"] * 0.0015);
+          if(d["pageName"] == "CMAJ Open")
+            return (d["views"] * 0.025);
+          if(d["pageName"] == "CMAJ Mobile")
+            return (d["views"] * 0.0055);
+          else
+            return (d["views"] * 0.02);
         })
         .attr("fill", "#DE8D47");
       
@@ -393,13 +406,24 @@ export class BarchartComponent implements OnInit {
         .enter()
         .append("text")
         .text(function(d) {
-          return (d.views * 0.001).toFixed(1);
+          return (d["views"] * 0.001).toFixed(1);
         })
         .attr("x", function (d, i) {
           return i * (w / dataset.length) + 25;
         })
         .attr("y", function (d) {
-          return h - (d.views * 0.02) + 25;
+          if(d["pageName"] == "CMAJ News")
+            return h - (d["views"] * 0.035) + 25;
+          if(d["pageName"] == "CMAJ Blogs")
+            return h - (d["views"] * 0.05) + 25;
+          if(d["pageName"] == "CMAJ.CA")
+            return h - (d["views"] * 0.0015) + 25;
+          if(d["pageName"] == "CMAJ Open")
+            return h - (d["views"] * 0.025) + 25;
+          if(d["pageName"] == "CMAJ Mobile")
+            return h - (d["views"] * 0.0055) + 25;
+          else
+            return h - (d["views"] * 0.02) + 25;
         })
         .attr("font-family", "arial")
         .attr("font-size", "16px")
@@ -410,7 +434,7 @@ export class BarchartComponent implements OnInit {
         .enter()
         .append("text")
         .text(function(d) {
-          return d.month.slice(0,7);
+          return d["month"].slice(0,7);
         })
         .attr("x", function (d, i) {
           return i * (w / dataset.length) + 15;
