@@ -7,8 +7,8 @@ import { tokenNotExpired } from 'angular2-jwt';
 
 @Injectable()
 export class AuthService {
-  authToken: any;
-  user: any;
+  //authToken: any;
+  //user: any;
 
   constructor(private http: Http) { }
 /*
@@ -55,7 +55,7 @@ export class AuthService {
     console.log("in AuthServices getGoogleData");
     let headers = new Headers();
     //this.loadToken();
-    headers.append('Authorization', this.authToken);
+    //headers.append('Authorization', this.authToken);
     headers.append('Content-Type', 'application/json');
     //return this.http.get('https://jsonplaceholder.typicode.com/posts'); //fate JSON data for testing
 
@@ -70,7 +70,7 @@ export class AuthService {
     //Generate API request from : https://ga-dev-tools.appspot.com/query-explorer/ 
     let headers = new Headers();
     //this.loadToken();
-    headers.append('Authorization', this.authToken);
+    //headers.append('Authorization', this.authToken);
     headers.append('Content-Type', 'application/json');
     //return this.http.get('https://jsonplaceholder.typicode.com/posts'); //fate JSON data for testing
 

@@ -8,7 +8,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {ValidateService} from './services/validate.service';
 import {FlashMessagesModule} from 'angular2-flash-messages';
 import {AuthService} from './services/auth.service';
-import {AuthGuard} from './guards/auth.guard';
+//import {AuthGuard} from './guards/auth.guard';
 
 
 import { AppComponent } from './app.component';
@@ -41,7 +41,8 @@ const appRoutes: Routes = [
     RouterModule.forRoot(appRoutes),
     FlashMessagesModule
   ],
-  providers: [ValidateService, AuthService, AuthGuard],
+  //providers: [ValidateService, AuthService, AuthGuard],
+  providers: [ValidateService, AuthService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
