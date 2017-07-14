@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Fetch and Display Google Analytics Data",
   "main": "app.js",
+  "engines": {
+    "node": "8.1.4"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app"
