@@ -1,4 +1,4 @@
-import { Component, OnInit, OnChanges, ViewChild, ElementRef, Input, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnChanges, ViewChild, ElementRef, Input, ViewEncapsulation, NgZone } from '@angular/core';
 import * as d3 from 'd3';
 import {Router} from '@angular/router';
 import {ActivatedRoute} from '@angular/router';
@@ -36,10 +36,13 @@ export class BarchartComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private authService: AuthService
+    private authService: AuthService,
+    private zone: NgZone
   ) { }
 
   ngOnInit() {
+
+   this.showData = false;
    let inputObj = this.getInputData();
    let firstDaysArr = this.getDates(inputObj["firstDay"]);
    let lastDaysArr = this.getDates(inputObj["lastDay"]);
@@ -187,6 +190,7 @@ export class BarchartComponent implements OnInit {
         return false;
       });
     }
+    this.refreshBindings();
     //console.log(pageviewArray);
     //let sortedArr = this.sortArr(pageviewArray); 
     //return pageviewArray;
@@ -213,6 +217,7 @@ export class BarchartComponent implements OnInit {
         console.log(err);
         return false;
       });
+    this.refreshBindings();
     }
   
 
@@ -448,10 +453,7 @@ export class BarchartComponent implements OnInit {
         .attr("font-size", "14px")
         .attr("fill", "white");
 
-
-      
-
-
+        this.refreshBindings();
 
 
     // chart plot area
@@ -479,6 +481,10 @@ export class BarchartComponent implements OnInit {
     //  .attr('class', 'axis axis-y')
     //  .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`)
     //  .call(d3.axisLeft(this.yScale));
+  }
+
+  public refreshBindings() {
+    this.zone.run(() => this.showData = true);
   }
 
   //updateChart() {

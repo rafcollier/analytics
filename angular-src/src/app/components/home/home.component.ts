@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, AfterViewInit, VERSION } from '@angular/core';
+import { Component, OnInit, ElementRef, AfterViewInit, VERSION, NgZone } from '@angular/core';
 import {AuthService} from '../../services/auth.service';
 import {Router} from '@angular/router';
 declare const gapi: any;
@@ -21,13 +21,16 @@ export class HomeComponent implements AfterViewInit {
     'https://www.googleapis.com/auth/plus.login' //to get access token
   ].join(' ');
 
-  public auth2: any;
+  public auth2: any; 
+
 
   constructor(
      private authService: AuthService,
      private element: ElementRef,
-     private router: Router
+     private router: Router,
+     private zone: NgZone
   	) { }
+
 
   ngAfterViewInit() {
     console.log("inside afterviewinit");

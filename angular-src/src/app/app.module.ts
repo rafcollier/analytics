@@ -16,12 +16,14 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { HomeComponent } from './components/home/home.component';
 import { AboutComponent } from './components/about/about.component';
 import { EnterkeyComponent } from './components/enterkey/enterkey.component';
+import { DummyComponent } from './components/dummy/dummy.component';
 import { BarchartComponent } from './components/barchart/barchart.component';
 
 const appRoutes: Routes = [
   {path: '', component: HomeComponent},
   {path: 'about', component: AboutComponent},
   {path: 'enterkey', component: EnterkeyComponent},
+  {path: 'dummy', component: DummyComponent},
   {path: 'barchart', component: BarchartComponent}
 ]
 
@@ -32,6 +34,7 @@ const appRoutes: Routes = [
     HomeComponent,
     AboutComponent,
     EnterkeyComponent,
+    DummyComponent,
     BarchartComponent
   ],
   imports: [
