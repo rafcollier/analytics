@@ -30,8 +30,11 @@ export class BarchartComponent implements OnInit {
 
   showData = false;
   inputAll = {};
+  devices: Array<any> = [];
   pageviews: Array<any> = [];
   topPages: Array<any> = [];
+  topCountrys: Array<any> = [];
+  topSources: Array<any> = [];
   
   constructor(
     private router: Router,
@@ -59,8 +62,14 @@ export class BarchartComponent implements OnInit {
      ],
      "metric1": "pageviews",
      "metric2": "uniquePageviews",
+     "metric3": "sessions",
      "dimension": "pagePath",
+     "dimension2": "country",
+     "dimension3": "source",
+     "dimension4": "deviceCategory",
      "sort": "uniquePageviews",
+     "sort2": "sessions",
+     "sort3": "pageviews",
      "max": 10
    }
 
@@ -125,39 +134,32 @@ export class BarchartComponent implements OnInit {
 
 
   public onButtonOneClick() {
-    console.log("Button One Clicked.");
-    this.showData = true;
-    this.onAnalyticsSubmit(this.inputAll["views"][0]);
-    this.onUniquePageviewsSubmit(this.inputAll["views"][0]);
-    
+    this.callAnalytics(0);
   }
 
   public onButtonTwoClick() {
-    console.log("Button One Clicked.");
-    this.onAnalyticsSubmit(this.inputAll["views"][1]);
-    this.onUniquePageviewsSubmit(this.inputAll["views"][1]);
-    this.showData = true;
+    this.callAnalytics(1);
   }
 
   public onButtonThreeClick() {
-    console.log("Button One Clicked.");
-    this.onAnalyticsSubmit(this.inputAll["views"][2]);
-    this.onUniquePageviewsSubmit(this.inputAll["views"][2]);
-    this.showData = true;
+    this.callAnalytics(2);
   }
 
   public onButtonFourClick() {
-    console.log("Button One Clicked.");
-    this.onAnalyticsSubmit(this.inputAll["views"][3]);
-    this.onUniquePageviewsSubmit(this.inputAll["views"][3]);
-    this.showData = true;
+    this.callAnalytics(3);
   }
 
   public onButtonFiveClick() {
-    console.log("Button One Clicked.");
-    this.onAnalyticsSubmit(this.inputAll["views"][4]);
-    this.onUniquePageviewsSubmit(this.inputAll["views"][4]);
+    this.callAnalytics(4);
+  }
+
+  public callAnalytics(index) {
     this.showData = true;
+    this.onAnalyticsSubmit(this.inputAll["views"][index]);
+    this.onUniquePageviewsSubmit(this.inputAll["views"][index]);
+    this.onCountryDataSubmit(this.inputAll["views"][index]);
+    this.onSourceDataSubmit(this.inputAll["views"][index]);
+    this.onDeviceDataSubmit(this.inputAll["views"][index]);
   }
 
   public onAnalyticsSubmit(view) {
@@ -191,27 +193,33 @@ export class BarchartComponent implements OnInit {
       });
     }
     this.refreshBindings();
-    //console.log(pageviewArray);
-    //let sortedArr = this.sortArr(pageviewArray); 
-    //return pageviewArray;
   }
 
   public onUniquePageviewsSubmit(view) {
     let topPagesArray = [];
-    let count = 0;
-    let topPagesObject = 
-        {
-          url: "",
-          views: "" 
-        };
-
     this.authService.getUniquePageviews(this.inputAll["firstDays"][0], this.inputAll["lastDays"][0], this.inputAll["metric2"], this.inputAll["dimension"], this.inputAll["sort"], this.inputAll["max"], this.inputAll["token"], view["id"]).subscribe(data => {
       console.log(data);
       for(var i=0; i<this.inputAll["max"]; i++) {
         topPagesArray.push({"url": data.rows[i][0], "views": data.rows[i][1]}); 
       }
       this.topPages = topPagesArray;
-      //console.log(this.topPages);
+      },
+      err => {
+        console.log(err);
+        return false;
+      });
+    this.refreshBindings();
+    }
+
+
+    public onCountryDataSubmit(view) {
+    let topCountrysArray = [];
+    this.authService.getCountryData(this.inputAll["firstDays"][0], this.inputAll["lastDays"][0], this.inputAll["metric3"], this.inputAll["dimension2"], this.inputAll["sort2"], this.inputAll["max"], this.inputAll["token"], view["id"]).subscribe(data => {
+      console.log(data);
+      for(var i=0; i<this.inputAll["max"]; i++) {
+        topCountrysArray.push({"country": data.rows[i][0], "views": data.rows[i][1]}); 
+      }
+      this.topCountrys = topCountrysArray;
       },
       err => {
         console.log(err);
@@ -220,148 +228,49 @@ export class BarchartComponent implements OnInit {
     this.refreshBindings();
     }
   
+    public onSourceDataSubmit(view) {
+    let topSourcesArray = [];
+    this.authService.getSourceData(this.inputAll["firstDays"][0], this.inputAll["lastDays"][0], this.inputAll["metric1"], this.inputAll["dimension3"], this.inputAll["sort3"], this.inputAll["max"], this.inputAll["token"], view["id"]).subscribe(data => {
+      console.log(data);
+      for(var i=0; i<this.inputAll["max"]; i++) {
+        topSourcesArray.push({"source": data.rows[i][0], "views": data.rows[i][1]}); 
+      }
+      this.topSources = topSourcesArray;
+      },
+      err => {
+        console.log(err);
+        return false;
+      });
+    this.refreshBindings();
+    }
+
+    public onDeviceDataSubmit(view) {
+    let devicesArray = [];
+    this.authService.getDeviceData(this.inputAll["firstDays"][0], this.inputAll["lastDays"][0], this.inputAll["metric1"], this.inputAll["dimension4"], this.inputAll["sort3"], this.inputAll["max"], this.inputAll["token"], view["id"]).subscribe(data => {
+      console.log(data);
+      for(var i=0; i<3; i++) { //only need 3: mobile, desktop, tablet
+        devicesArray.push({"device": data.rows[i][0], "views": data.rows[i][1]}); 
+        console.log(data.rows[i]);
+      }
+      this.devices = devicesArray;
+      },
+      err => {
+        console.log(err);
+        return false;
+      });
+    this.refreshBindings();
+    }
 
   public createChart(dataset) {
 
     console.log("in createChart");
     console.log(dataset);
 
-    //let element1 = this.chartContainer1.nativeElement;
-   // let element2 = this.chartContainer2.nativeElement;
-
-    //this.width = element1.offsetWidth - this.margin.left - this.margin.right;
-    //this.height = element1.offsetHeight - this.margin.top - this.margin.bottom;
-    //console.log(this.width);
-    //console.log(this.height);
-   // console.log(element1.offsetWidth);
-    //console.log(element1.offsetHeight);
-
-    //let svg1 = d3.select(element1).append('svg')
-     // .attr('width', element1.offsetWidth)
-     // .attr('height', element1.offsetHeight);
-
-    //let svg2 = d3.select(element2).append('svg')
-     // .attr('width', element2.offsetWidth)
-     // .attr('height', element2.offsetHeight);
-
-
-
-   //console.log(this.data);
-   //console.log(this.pageviewsOnly);
-
-    //svg1.selectAll("rect")
-     // .data(this.data)
-     // .data(this.pageviewsOnly)
-     // .enter()
-     // .append("rect")
-     // .attr("x", function(d, i) {
-     //   return (i * 65)  //Bar width of 20 plus 1 for padding
-     // })
-     // .attr("y", function(d) {
-     //   return element1.offsetHeight - (d * 0.001) ;  //Height minus data value
-     // })
-     // .attr("width", 60)
-     // .attr("height", function(d) {
-     //   return (d * 0.001); 
-     // })
-     // .attr("fill", "red");
-
-
-
-
-
-//      svg2.selectAll("rect")
-//      .data(this.data)
-//      .enter()
-//      .append("rect")
-//      .attr("x", function(d, i) {
-//        return (i * 21)  //Bar width of 20 plus 1 for padding
-//      })
-//      .attr("y", function(d) {
-//        return element2.offsetHeight - (d * 10);  //Height minus data value
-//      })
-//      .attr("width", 20)
-//      .attr("height", function(d) {
-//        return (d * 10);
-//      })
-//      .attr("fill", "green");
-
-
-
-
-
-      //d3.select("body").selectAll("p")
-       // .data(this.data)
-       // .enter()
-       // .append("p")
-       // //.text("New Paragraph");
-       // .text(function(d) {return d;})
-       // .style("color", "red");
-
-
-
-      //d3.select("body").selectAll("h4")
-       // .data(this.data)
-       // .enter()
-       // .append("h4")
-       // .text(function(d) {return d;});
-        //.attr("class", "bar");
-
-
-     // d3.select("body").selectAll(".somediv") //can't select DIV because already DIV in HTML
-      //  .data(this.pageviewsOnly)
-      //  .enter()
-      //  .append("div")
-      //  .attr("class", "bar")
-      //  .style("height", function(d) {
-      //    var barHeight = d * 0.001;
-      //    return barHeight + "px";
-      //  });
-
-
-
-      //var w = 500;
-      //var h = 50;
-
-      //var svg = d3.select("body")
-      //  .append("svg")
-      //  .attr("width", w)
-      //  .attr("height", h)
-//
-//      var circles = svg.selectAll("circle")  
-//        .data(this.data)
-//        .enter()
-//        .append("circle");
-//
-//      circles.attr('cx', function(d, i) {
-//        return (i * 50) + 25;
-//      })
-//      .attr("cy", h/2)
-//      .attr("r", function(d) {
-//        return d;
-//      })
-//      .attr("fill", "yellow");
-
-     
       d3.select("svg").remove();
 
       var w = 500;
       var h = 500;
       var barPadding = 3;
-      //var dataset = this.pageviewsOnly;
-      //var dataset = this.pageviews;
-      //var dataset = pageViewArray;
-      //console.log("dataset");
-      //console.log(dataset);
-
-      //var xscale = d3.scaleLinear()
-       // .domain([d3.min(dataset, function(d) { return d; }), d3.max(dataset, function(d) {return d;})])
-       // .range([0, w]);
-        
-      //var yscale = d3.scaleLinear()
-      //  .domain([d3.min(dataset, function(d) { return d; }), d3.max(dataset, function(d) {return d;})])
-      //  .range([0, h]);
-
 
       var svg = d3.select("#barchart1")
         .append("svg")
@@ -454,77 +363,12 @@ export class BarchartComponent implements OnInit {
         .attr("fill", "white");
 
         this.refreshBindings();
-
-
-    // chart plot area
-    //this.chart = svg.append('g')
-     // .attr('class', 'bars')
-     // .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`);
-
-    // define X & Y domains
-    //let xDomain = this.data.map(d => d[0]);
-    //let yDomain = [0, d3.max(this.data, d => d[1])];
-
-    // create scales
-    //this.xScale = d3.scaleBand().padding(0.1).domain(xDomain).rangeRound([0, this.width]);
-    //this.yScale = d3.scaleLinear().domain(yDomain).range([this.height, 0]);
-
-    // bar colors
-    //this.colors = d3.scaleLinear().domain([0, this.data.length]).range(<any[]>['red', 'blue']);
-
-    // x & y axis
-   // this.xAxis = svg.append('g')
-   //   .attr('class', 'axis axis-x')
-    //  .attr('transform', `translate(${this.margin.left}, ${this.margin.top + this.height})`)
-    //  .call(d3.axisBottom(this.xScale));
-   // this.yAxis = svg.append('g')
-    //  .attr('class', 'axis axis-y')
-    //  .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`)
-    //  .call(d3.axisLeft(this.yScale));
+    
   }
 
   public refreshBindings() {
     this.zone.run(() => this.showData = true);
   }
-
-  //updateChart() {
-    // update scales & axis
-    //this.xScale.domain(this.data.map(d => d[0]));
-    //this.yScale.domain([0, d3.max(this.data, d => d[1])]);
-    //this.colors.domain([0, this.data.length]);
-    ////this.xAxis.transition().call(d3.axisBottom(this.xScale));
-    //this.yAxis.transition().call(d3.axisLeft(this.yScale));
-
-    //let update = this.chart.selectAll('.bar')
-    //  .data(this.data);
-
-    // remove exiting bars
-    //update.exit().remove();
-
-    // update existing bars
-    //this.chart.selectAll('.bar').transition()
-    //  .attr('x', d => this.xScale(d[0]))
-    //  .attr('y', d => this.yScale(d[1]))
-    //  .attr('width', d => this.xScale.bandwidth())
-    //  .attr('height', d => this.height - this.yScale(d[1]))
-    //  .style('fill', (d, i) => this.colors(i));
-
-    // add new bars
-    //update
-    //  .enter()
-    //  .append('rect')
-    //  .attr('class', 'bar')
-    //  .attr('x', d => this.xScale(d[0]))
-    //  .attr('y', d => this.yScale(0))
-    //  .attr('y', 0)
-    //  .attr('width', this.xScale.bandwidth())
-    //  .attr('height', 0)
-    //  .style('fill', (d, i) => this.colors(i))
-    //  .transition()
-    //  .delay((d, i) => i * 10)
-    //  .attr('y', d => this.yScale(d[1]))
-    //  .attr('height', d => this.height - this.yScale(d[1]));
-  //}
 
 
 }
