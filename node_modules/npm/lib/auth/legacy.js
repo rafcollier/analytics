@@ -1,142 +1,79 @@
-var log = require('npmlog')
-var npm = require('../npm.js')
-var read = require('read')
-var userValidate = require('npm-user-validate')
-var output = require('../utils/output')
-var chain = require('slide').chain
+'use strict'
 
-module.exports.login = function login (creds, registry, scope, cb) {
-  var c = {
-    u: creds.username || '',
-    p: creds.password || '',
-    e: creds.email || ''
-  }
-  var u = {}
+const read = require('../utils/read-user-info.js')
+const profile = require('libnpm/profile')
+const log = require('npmlog')
+const figgyPudding = require('figgy-pudding')
+const npmConfig = require('../config/figgy-config.js')
+const output = require('../utils/output.js')
+const openUrl = require('../utils/open-url')
 
-  chain([
-    [readUsername, c, u],
-    [readPassword, c, u],
-    [readEmail, c, u],
-    [save, c, u, registry, scope]
-  ], function (err, res) {
-    cb(err, res && res[res.length - 1])
+const openerPromise = (url) => new Promise((resolve, reject) => {
+  openUrl(url, 'to complete your login please visit', (er) => er ? reject(er) : resolve())
+})
+
+const loginPrompter = (creds) => {
+  const opts = { log: log }
+  return read.username('Username:', creds.username, opts).then((u) => {
+    creds.username = u
+    return read.password('Password:', creds.password)
+  }).then((p) => {
+    creds.password = p
+    return read.email('Email: (this IS public) ', creds.email, opts)
+  }).then((e) => {
+    creds.email = e
+    return creds
   })
 }
 
-function readUsername (c, u, cb) {
-  var v = userValidate.username
-  read({prompt: 'Username: ', default: c.u || ''}, function (er, un) {
-    if (er) {
-      return cb(er.message === 'cancelled' ? er.message : er)
-    }
+const LoginOpts = figgyPudding({
+  'always-auth': {},
+  creds: {},
+  log: {default: () => log},
+  registry: {},
+  scope: {}
+})
 
-    // make sure it's valid.  we have to do this here, because
-    // couchdb will only ever say "bad password" with a 401 when
-    // you try to PUT a _users record that the validate_doc_update
-    // rejects for *any* reason.
-
-    if (!un) {
-      return readUsername(c, u, cb)
-    }
-
-    var error = v(un)
-    if (error) {
-      log.warn(error.message)
-      return readUsername(c, u, cb)
-    }
-
-    c.changed = c.u !== un
-    u.u = un
-    cb(er)
-  })
+module.exports.login = (creds = {}, registry, scope, cb) => {
+  const opts = LoginOpts(npmConfig()).concat({scope, registry, creds})
+  login(opts).then((newCreds) => cb(null, newCreds)).catch(cb)
 }
 
-function readPassword (c, u, cb) {
-  var v = userValidate.pw
+function login (opts) {
+  return profile.login(openerPromise, loginPrompter, opts)
+    .catch((err) => {
+      if (err.code === 'EOTP') throw err
+      const u = opts.creds.username
+      const p = opts.creds.password
+      const e = opts.creds.email
+      if (!(u && p && e)) throw err
+      return profile.adduserCouch(u, e, p, opts)
+    })
+    .catch((err) => {
+      if (err.code !== 'EOTP') throw err
+      return read.otp(
+        'Enter one-time password from your authenticator app: '
+      ).then(otp => {
+        const u = opts.creds.username
+        const p = opts.creds.password
+        return profile.loginCouch(u, p, opts.concat({otp}))
+      })
+    }).then((result) => {
+      const newCreds = {}
+      if (result && result.token) {
+        newCreds.token = result.token
+      } else {
+        newCreds.username = opts.creds.username
+        newCreds.password = opts.creds.password
+        newCreds.email = opts.creds.email
+        newCreds.alwaysAuth = opts['always-auth']
+      }
 
-  var prompt
-  if (c.p && !c.changed) {
-    prompt = 'Password: (or leave unchanged) '
-  } else {
-    prompt = 'Password: '
-  }
-
-  read({prompt: prompt, silent: true}, function (er, pw) {
-    if (er) {
-      return cb(er.message === 'cancelled' ? er.message : er)
-    }
-
-    if (!c.changed && pw === '') {
-      // when the username was not changed,
-      // empty response means "use the old value"
-      pw = c.p
-    }
-
-    if (!pw) {
-      return readPassword(c, u, cb)
-    }
-
-    var error = v(pw)
-    if (error) {
-      log.warn(error.message)
-      return readPassword(c, u, cb)
-    }
-
-    c.changed = c.changed || c.p !== pw
-    u.p = pw
-    cb(er)
-  })
-}
-
-function readEmail (c, u, cb) {
-  var v = userValidate.email
-  var r = { prompt: 'Email: (this IS public) ', default: c.e || '' }
-  read(r, function (er, em) {
-    if (er) {
-      return cb(er.message === 'cancelled' ? er.message : er)
-    }
-
-    if (!em) {
-      return readEmail(c, u, cb)
-    }
-
-    var error = v(em)
-    if (error) {
-      log.warn(error.message)
-      return readEmail(c, u, cb)
-    }
-
-    u.e = em
-    cb(er)
-  })
-}
-
-function save (c, u, registry, scope, cb) {
-  var params = {
-    auth: {
-      username: u.u,
-      password: u.p,
-      email: u.e
-    }
-  }
-  npm.registry.adduser(registry, params, function (er, doc) {
-    if (er) return cb(er)
-
-    var newCreds = (doc && doc.token)
-    ? {
-      token: doc.token
-    }
-    : {
-      username: u.u,
-      password: u.p,
-      email: u.e,
-      alwaysAuth: npm.config.get('always-auth')
-    }
-
-    log.info('adduser', 'Authorized user %s', u.u)
-    var scopeMessage = scope ? ' to scope ' + scope : ''
-    output('Logged in as %s%s on %s.', u.u, scopeMessage, registry)
-
-    cb(null, newCreds)
-  })
+      const usermsg = opts.creds.username ? ' user ' + opts.creds.username : ''
+      opts.log.info('login', 'Authorized' + usermsg)
+      const scopeMessage = opts.scope ? ' to scope ' + opts.scope : ''
+      const userout = opts.creds.username ? ' as ' + opts.creds.username : ''
+      output('Logged in%s%s on %s.', userout, scopeMessage, opts.registry)
+      return newCreds
+    })
 }

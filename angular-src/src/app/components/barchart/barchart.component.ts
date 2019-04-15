@@ -1,8 +1,10 @@
-import { Component, OnInit, OnChanges, ViewChild, ElementRef, Input, ViewEncapsulation, NgZone } from '@angular/core';
+import { Component, OnInit, OnChanges, ViewChild, ElementRef, Input, ViewEncapsulation, NgZone, ChangeDetectorRef } from '@angular/core';
 import * as d3 from 'd3';
 import {Router} from '@angular/router';
 import {ActivatedRoute} from '@angular/router';
 import {AuthService} from '../../services/auth.service';
+import * as moment from 'moment';
+import { forkJoin } from 'rxjs';
 
 const config = require('../../../../../config/google');
 
@@ -13,9 +15,6 @@ const config = require('../../../../../config/google');
   encapsulation: ViewEncapsulation.None
 })
 export class BarchartComponent implements OnInit {
-  //@ViewChild('chart1') private chartContainer1: ElementRef;
-  //@ViewChild('chart2') private chartContainer2: ElementRef;
-  //data: Array<any> = [5, 12, 34, 56, 88];
   data: Array<any> = [8, 10, 6, 7, 15, 22];
   margin: any = { top: 20, bottom: 20, left: 20, right: 20};
   private chart: any;
@@ -28,27 +27,35 @@ export class BarchartComponent implements OnInit {
   private yAxis: any;
   private sub: any;
 
-  showData = false;
+  pieChartColors: Array <any> = ["#5DADE2", "#48C9B0", "#F5B041", "#EC7063", "#AF7AC5", "#F4D03F", "#AAB7B8" ];
+  viewIndex: any = 0;
+  showDataNews: Boolean = true;
+  showDataMain: Boolean = false;
+  showDataBlogs: Boolean = false;
   inputAll = {};
-  devices: Array<any> = [];
-  pageviews: Array<any> = [];
+  pageviewsArray: Array<any> = [];
+  usersArray: Array<any> = [];
+  newUsersArray: Array<any> = [];
+  sessionsArray: Array<any> = [];
   topPages: Array<any> = [];
-  topCountrys: Array<any> = [];
   topSources: Array<any> = [];
+  topDevices: Array<any> = [];
+  topCountries: Array<any> = [];
   
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private zone: NgZone
+    private zone: NgZone,
+    private ref: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
 
-   this.showData = false;
    let inputObj = this.getInputData();
-   let firstDaysArr = this.getDates(inputObj["firstDay"]);
-   let lastDaysArr = this.getDates(inputObj["lastDay"]);
+   let firstDaysArr = this.getDates(inputObj["firstDay"], "first");
+   let lastDaysArr = this.getDates(inputObj["lastDay"], "second");
+
    this.inputAll = {
      "token": inputObj["token"],
      "firstDays": firstDaysArr,
@@ -63,6 +70,9 @@ export class BarchartComponent implements OnInit {
      "metric1": "pageviews",
      "metric2": "uniquePageviews",
      "metric3": "sessions",
+     "metric4": "users",
+     "metric5": "newUsers",
+     "metric6": "sessions",
      "dimension": "pagePath",
      "dimension2": "country",
      "dimension3": "source",
@@ -70,16 +80,15 @@ export class BarchartComponent implements OnInit {
      "sort": "uniquePageviews",
      "sort2": "sessions",
      "sort3": "pageviews",
-     "max": 10
+     "max": 10,
+     "maxSources": 7,
+     "maxCountries": 7 
    }
-
-   console.log(this.inputAll); 
+   this.onButtonOneClick();
   }
-  
 
   //Get form data passed in from enterkey component as routing parameters
   getInputData() {
-    console.log("In getInputData");
     let dataInput = {};
     this.sub = this.route
     .queryParams
@@ -91,231 +100,218 @@ export class BarchartComponent implements OnInit {
     return dataInput;
   }
 
-  //Get Array of 5 previous months (first or last days)
-  getDates(day) {
-    console.log("In getDates");
-    const num = 6;
-    let objArr = []; 
-    let strArr = []; 
-    strArr[0] = day;
-    objArr[0] = this.getDate(day);
-    for(var i = 1; i < num; i++) {
-      if(day.substr(8) == '01') { //First day of month
-        objArr[i] = this.prevMonthFirst(objArr[i-1]);
-      } else {
-        const firstDay = this.prevMonthFirst(this.getDate(strArr[i-1].substr(0,8).concat('01'))); //get first day previous month
-        objArr[i] = this.prevMonthLast(firstDay); //get last day previous month from the first day
+  //Get Array of previous months (first or last days)
+  getDates(day, position) {
+    const NUM = 6;
+    if(position == "first") {
+      let firstArr = [];
+      firstArr.push(day);
+      for(let i=0; i<NUM; i++) {
+        firstArr.push(moment(firstArr[i]).subtract(1,'months').startOf('month').format('YYYY-MM-DD'));
       }
-      strArr[i] = objArr[i].toISOString().substr(0,10);
+      return firstArr;
     }
-    return strArr; 
+    else if(position == "second") {
+      let lastArr = [];
+      lastArr.push(day);
+      for(let i=0; i<NUM; i++) {
+        lastArr.push(moment(lastArr[i]).subtract(1,'months').endOf('month').format('YYYY-MM-DD'));
+      }
+      return lastArr;
+    }
   }
 
-  //Create data object when passed a date string: YYYY-MM-DD
-  getDate(date) {
-    const year = parseInt(date.slice(0,4));
-    const month = parseInt(date.slice(5,7));
-    const days = parseInt(date.substr(8));
-    const newDate = new Date(year, month - 1, days);//
-    return newDate;
-  }
-
-  //Calculate first day of the previous month when passed a date object
-  prevMonthFirst(date) {
-    var firstDate = new Date (date.getFullYear(), date.getMonth() -1, 1);
-    return firstDate;
-  }
-
-  //Calculate last day of the previous month when passed a date object
-  prevMonthLast(date) {
-    var lastDate = new Date (date.getFullYear(), date.getMonth() + 1, 0);
-    return lastDate;
-  }
-
-
+  //News button 
   public onButtonOneClick() {
-    this.callAnalytics(0);
+    this.showDataNews = true;
+    this.showDataMain = false;
+    this.showDataBlogs = false; 
+    this.callAnalyticsCommon(1, "chartTopSourcesNews", 
+                                "chartTopPageviewsNews", 
+                                "chartTopDevicesNews", 
+                                "chartTopCountriesNews", 
+                                "chartTopUsersNews", 
+                                "chartTopNewUsersNews", 
+                                "chartTopSessionsNews", 
+                             0, 0.015, 0.030);
+  }
+ 
+  public callAnalyticsCommon(viewIndex, chartID1, chartID2, 
+                             chartID3, chartID4, chartID5, 
+                             chartID6, chartID7, count, scale1, scale2) {
+    this.onSourceDataSubmit(this.inputAll["views"][viewIndex], chartID1);  
+    this.onPageviewsDataSubmit(this.inputAll["views"][viewIndex], chartID2, count, scale1);
+    this.onDeviceDataSubmit(this.inputAll["views"][viewIndex], chartID3);
+    this.onUniquePageviewsSubmit(this.inputAll["views"][viewIndex]);
+    this.onCountriesDataSubmit(this.inputAll["views"][viewIndex], chartID4);
   }
 
-  public onButtonTwoClick() {
-    this.callAnalytics(1);
+  public onSourceDataSubmit(view, chartID) {
+    this.topSources = [];
+    this.authService.getSourceData(
+                                   this.inputAll["firstDays"][0], 
+                                   this.inputAll["lastDays"][0], 
+                                   this.inputAll["metric1"], 
+                                   this.inputAll["dimension3"], 
+                                   this.inputAll["sort3"], 
+                                   this.inputAll["maxSources"], 
+                                   this.inputAll["token"], 
+                                   view["id"]).subscribe(data => {
+      for(let i=0; i<this.inputAll["maxSources"]; i++) {
+        this.topSources.push({
+                              "source": data.rows[i][0], 
+                              "views": data.rows[i][1], 
+                              "color": this.pieChartColors[i]
+        });
+      }
+      this.ref.detectChanges();
+      this.createPieChart(this.topSources, chartID);
+    },
+    err => {
+      console.log(err);
+      return false;
+    });
   }
 
-  public onButtonThreeClick() {
-    this.callAnalytics(2);
-  }
-
-  public onButtonFourClick() {
-    this.callAnalytics(3);
-  }
-
-  public onButtonFiveClick() {
-    this.callAnalytics(4);
-  }
-
-  public callAnalytics(index) {
-    this.showData = true;
-    this.onAnalyticsSubmit(this.inputAll["views"][index]);
-    this.onUniquePageviewsSubmit(this.inputAll["views"][index]);
-    this.onCountryDataSubmit(this.inputAll["views"][index]);
-    this.onSourceDataSubmit(this.inputAll["views"][index]);
-    this.onDeviceDataSubmit(this.inputAll["views"][index]);
-  }
-
-  public onAnalyticsSubmit(view) {
-    console.log("In onAnalyticsSubmit");
-    console.log(view);
-    var pageviewArray = [];
-    var count = 0;
-
-    for (var i = 0; i < this.inputAll["firstDays"].length; i++) {
-
-     this.authService.getGoogleData(this.inputAll["firstDays"][i], this.inputAll["lastDays"][i], this.inputAll["metric1"], this.inputAll["token"], view["id"]).subscribe(data => {
-        count++;
-        pageviewArray.push({"pageName" : view["name"], "views": parseInt(data.totalsForAllResults["ga:pageviews"]), "month": data.query["start-date"]});
-
-        //sort array if arrived out of sequence
-        if(count == this.inputAll["firstDays"].length) {
-          pageviewArray.sort((a,b) => {
-            if(a.month < b.month)
-              return -1;
-            if(a.month > b.month)
-              return 1;
-            return 0;
-          });
-        console.log(pageviewArray); 
-        this.createChart(pageviewArray);
-        }  
-      },
+public onPageviewsDataSubmit(view, chartID, count, chartScale) : any {
+    this.authService.getGoogleData(this.inputAll["firstDays"][count], 
+                                   this.inputAll["lastDays"][count], 
+                                   this.inputAll["metric1"], 
+                                   this.inputAll["token"], 
+                                   view["id"]).subscribe(data => {
+      console.log(data);
+      this.pageviewsArray.push({"pageName" : view["name"], 
+                                "views": parseInt(data.totalsForAllResults["ga:pageviews"]), 
+                                "month": data.query["start-date"]}
+                              );
+      if (count < 5) {
+        setTimeout(() => {
+          this.onPageviewsDataSubmit(view, chartID, count + 1, chartScale); 
+        }, 300);
+      }
+      else {
+        this.createBarChart(this.pageviewsArray.reverse(), chartID, chartScale, "#F5B041"); 
+        this.pageviewsArray =[];
+        this.ref.detectChanges();
+      }
+    },
       err => {
         console.log(err);
         return false;
-      });
-    }
-    this.refreshBindings();
+    });
   }
 
   public onUniquePageviewsSubmit(view) {
-    let topPagesArray = [];
-    this.authService.getUniquePageviews(this.inputAll["firstDays"][0], this.inputAll["lastDays"][0], this.inputAll["metric2"], this.inputAll["dimension"], this.inputAll["sort"], this.inputAll["max"], this.inputAll["token"], view["id"]).subscribe(data => {
-      console.log(data);
-      for(var i=0; i<this.inputAll["max"]; i++) {
-        topPagesArray.push({"url": data.rows[i][0], "views": data.rows[i][1]}); 
-      }
-      this.topPages = topPagesArray;
-      },
-      err => {
-        console.log(err);
-        return false;
-      });
-    this.refreshBindings();
-    }
 
-
-    public onCountryDataSubmit(view) {
-    let topCountrysArray = [];
-    this.authService.getCountryData(this.inputAll["firstDays"][0], this.inputAll["lastDays"][0], this.inputAll["metric3"], this.inputAll["dimension2"], this.inputAll["sort2"], this.inputAll["max"], this.inputAll["token"], view["id"]).subscribe(data => {
-      console.log(data);
+    this.topPages = [];
+    this.authService.getUniquePageviews(this.inputAll["firstDays"][0], 
+                                        this.inputAll["lastDays"][0], 
+                                        this.inputAll["metric2"], 
+                                        this.inputAll["dimension"], 
+                                        this.inputAll["sort"], 
+                                        this.inputAll["max"], 
+                                        this.inputAll["token"], 
+                                        view["id"]).subscribe(data => {
+      console.log(data);                                   
       for(var i=0; i<this.inputAll["max"]; i++) {
-        topCountrysArray.push({"country": data.rows[i][0], "views": data.rows[i][1]}); 
+        let urlStr = data.rows[i][0];
+        //let urlNewStr = urlStr.replace(/-/g, " ");
+        let urlNewStr = urlStr.replace(/\/[0-9]+\/[0-9]+\/[0-9]+\//, "")
+                              .replace(/cmaj-[0-9]+-[0-9]+\//, "")
+                              .replace(/-/g, " ")
+                              .replace(/\//g, "");
+   
+        if(urlNewStr != "") {
+          this.topPages.push({"url": urlNewStr, "views": data.rows[i][1]}); 
+        }
       }
-      this.topCountrys = topCountrysArray;
-      },
-      err => {
-        console.log(err);
-        return false;
-      });
-    this.refreshBindings();
-    }
-  
-    public onSourceDataSubmit(view) {
-    let topSourcesArray = [];
-    this.authService.getSourceData(this.inputAll["firstDays"][0], this.inputAll["lastDays"][0], this.inputAll["metric1"], this.inputAll["dimension3"], this.inputAll["sort3"], this.inputAll["max"], this.inputAll["token"], view["id"]).subscribe(data => {
-      console.log(data);
-      for(var i=0; i<this.inputAll["max"]; i++) {
-        topSourcesArray.push({"source": data.rows[i][0], "views": data.rows[i][1]}); 
-      }
-      this.topSources = topSourcesArray;
-      },
-      err => {
-        console.log(err);
-        return false;
-      });
-    this.refreshBindings();
-    }
+      this.ref.detectChanges();
+    },
+    err => {
+      console.log(err);
+      return false;
+    });
 
-    public onDeviceDataSubmit(view) {
-    let devicesArray = [];
-    this.authService.getDeviceData(this.inputAll["firstDays"][0], this.inputAll["lastDays"][0], this.inputAll["metric1"], this.inputAll["dimension4"], this.inputAll["sort3"], this.inputAll["max"], this.inputAll["token"], view["id"]).subscribe(data => {
+  }
+
+  public onDeviceDataSubmit(view, chartID) {
+
+    this.topDevices = [];
+    this.authService.getDeviceData(this.inputAll["firstDays"][0], 
+                                   this.inputAll["lastDays"][0], 
+                                   this.inputAll["metric1"], 
+                                   this.inputAll["dimension4"], 
+                                   this.inputAll["sort3"], 
+                                   this.inputAll["max"], 
+                                   this.inputAll["token"], 
+      view["id"]).subscribe(data => {
       console.log(data);
       for(var i=0; i<3; i++) { //only need 3: mobile, desktop, tablet
-        devicesArray.push({"device": data.rows[i][0], "views": data.rows[i][1]}); 
-        console.log(data.rows[i]);
+        this.topDevices.push({"device": data.rows[i][0], "views": data.rows[i][1], "color": this.pieChartColors[i]}); 
       }
-      this.devices = devicesArray;
-      },
-      err => {
-        console.log(err);
-        return false;
-      });
-    this.refreshBindings();
-    }
+      this.ref.detectChanges();
+      this.createPieChart(this.topDevices, chartID);
+    },
+    err => {
+      console.log(err);
+      return false;
+    });
+  } 
 
-  public createChart(dataset) {
+  public onCountriesDataSubmit(view, chartID) {
+    this.topCountries = [];
+    this.authService.getCountryData(this.inputAll["firstDays"][0], 
+                                    this.inputAll["lastDays"][0], 
+                                    this.inputAll["metric3"], 
+                                    this.inputAll["dimension2"], 
+                                    this.inputAll["sort2"], 
+                                    this.inputAll["maxCountries"], 
+                                    this.inputAll["token"], 
+                                    view["id"]).subscribe(data => {
+      console.log(data);
+      for(var i=0; i<this.inputAll["maxCountries"]; i++) {
+        this.topCountries.push({"country": data.rows[i][0], "views": data.rows[i][1], "color": this.pieChartColors[i]}); 
+      }
+      this.ref.detectChanges();
+      this.createPieChart(this.topCountries, chartID);
+      
+    },
+    err => {
+      console.log(err);
+      return false;
+    });
+  }
 
-    console.log("in createChart");
-    console.log(dataset);
+  public createBarChart(dataset, chartID, scale, color) {
 
-      d3.select("svg").remove();
+    let w = 500;
+    let h = 500;
+    let barPadding = 3; 
 
-      var w = 500;
-      var h = 500;
-      var barPadding = 3;
+    d3.select("#" + chartID).selectAll("svg").remove(); 
 
-      var svg = d3.select("#barchart1")
-        .append("svg")
-        .attr("width", w)
-        .attr("height", h)
-        .attr("align", "center");
+    let svg = d3.select("#" + chartID)
+      .append("svg")
+      .attr("id", chartID)
+      .attr("width", w)
+      .attr("height", h + 30)
+      .attr("align", "center");
 
-
-      svg.selectAll("rect")  
-        .data(dataset)
-        .enter()
-        .append("rect")
-        .attr("x", function(d, i) {
-          return i * (w / dataset.length);
-        })
-        .attr("y", function(d) {
-          if(d["pageName"] == "CMAJ News")
-            return h - (d["views"] * 0.035);
-          if(d["pageName"] == "CMAJ Blogs")
-            return h - (d["views"] * 0.05);
-          if(d["pageName"] == "CMAJ.CA")
-            return h - (d["views"] * 0.0015);
-          if(d["pageName"] == "CMAJ Open")
-            return h - (d["views"] * 0.025);
-          if(d["pageName"] == "CMAJ Mobile")
-            return h - (d["views"] * 0.0055);
-          else
-            return h - (d["views"] * 0.002);
-        })
-        .attr("width", w /dataset.length - barPadding)
-        .attr("height", function(d) {
-          if(d["pageName"] == "CMAJ News")
-            return (d["views"] * 0.035);
-          if(d["pageName"] == "CMAJ Blogs")
-            return (d["views"] * 0.05);
-          if(d["pageName"] == "CMAJ.CA")
-            return (d["views"] * 0.0015);
-          if(d["pageName"] == "CMAJ Open")
-            return (d["views"] * 0.025);
-          if(d["pageName"] == "CMAJ Mobile")
-            return (d["views"] * 0.0055);
-          else
-            return (d["views"] * 0.02);
-        })
-        .attr("fill", "#DE8D47");
+    svg.selectAll("rect")  
+      .data(dataset)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i) {
+        return i * (w / dataset.length);
+      })
+      .attr("y", function(d) {
+          return h - (d["views"] * scale);
+      })
+      .attr("width", w /dataset.length - barPadding)
+      .attr("height", function(d) {
+          return (d["views"] * scale);
+      })
+      .attr("fill", color);
       
       svg.selectAll("text.values")
         .data(dataset)
@@ -328,22 +324,11 @@ export class BarchartComponent implements OnInit {
           return i * (w / dataset.length) + 25;
         })
         .attr("y", function (d) {
-          if(d["pageName"] == "CMAJ News")
-            return h - (d["views"] * 0.035) + 25;
-          if(d["pageName"] == "CMAJ Blogs")
-            return h - (d["views"] * 0.05) + 25;
-          if(d["pageName"] == "CMAJ.CA")
-            return h - (d["views"] * 0.0015) + 25;
-          if(d["pageName"] == "CMAJ Open")
-            return h - (d["views"] * 0.025) + 25;
-          if(d["pageName"] == "CMAJ Mobile")
-            return h - (d["views"] * 0.0055) + 25;
-          else
-            return h - (d["views"] * 0.02) + 25;
+            return h - (d["views"] * scale) - 10;
         })
         .attr("font-family", "arial")
         .attr("font-size", "16px")
-        .attr("fill", "white");
+        .attr("fill", "black");
 
       svg.selectAll("text.labels")
         .data(dataset)
@@ -356,19 +341,62 @@ export class BarchartComponent implements OnInit {
           return i * (w / dataset.length) + 15;
         })
         .attr("y", function (d) {
-          return h - 20;
+          return h + 15;
         })
         .attr("font-family", "arial")
         .attr("font-size", "14px")
-        .attr("fill", "white");
+        .attr("fill", "black");
 
-        this.refreshBindings();
-    
   }
+  
+  
+  public createPieChart(dataset, chartID) {
 
-  public refreshBindings() {
-    this.zone.run(() => this.showData = true);
+    let w = 400;
+    let h = 400;
+    let r = Math.min(w,h)/2; 
+    let innerR = r - 50;
+    let outerR = r - 10;
+    let pieChartColors = this.pieChartColors; 
+
+    d3.select("#" + chartID).selectAll("svg").remove(); 
+
+    let arc = d3.arc()
+      .outerRadius(r - 10)
+      .innerRadius(0);
+
+    let labelArc = d3.arc()
+      .outerRadius(r - 40)
+      .innerRadius(r - 40);
+
+    let pie = d3.pie()
+      .sort(null)
+      .value((function (d:any) {return d}));
+
+    d3.select("#" + chartID).selectAll("svg").remove(); 
+
+    let svg = d3.select("#" + chartID)
+        .append("svg")
+        .attr("id", chartID)
+        .attr("width", w)
+        .attr("height", h + 30)
+        .attr("align", "center")
+        .append("g")
+        .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")");
+
+      let values = dataset.map(data => data.views);
+   
+      let g = svg.selectAll(".arc")
+        .data(pie(values))
+        .enter().append("g")
+        .attr("class", "arc");
+
+      g.append("path")
+        .attr("d", <any>arc)
+        .style("fill", function(d, i)  {
+          return pieChartColors[i];
+        });
+
   }
-
 
 }

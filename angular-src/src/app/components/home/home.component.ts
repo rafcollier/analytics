@@ -4,7 +4,6 @@ import {Router} from '@angular/router';
 declare const gapi: any;
 const config = require('../../../../../config/google');
 
-
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -18,11 +17,10 @@ export class HomeComponent implements AfterViewInit {
     'https://www.googleapis.com/auth/plus.me',
     'https://www.googleapis.com/auth/contacts.readonly',
     'https://www.googleapis.com/auth/admin.directory.user.readonly',
-    'https://www.googleapis.com/auth/plus.login' //to get access token
+    'https://www.googleapis.com/auth/plus.login' 
   ].join(' ');
 
   public auth2: any; 
-
 
   constructor(
      private authService: AuthService,
@@ -31,14 +29,11 @@ export class HomeComponent implements AfterViewInit {
      private zone: NgZone
   	) { }
 
-
   ngAfterViewInit() {
-    console.log("inside afterviewinit");
     this.googleInit();
   }
 
   public googleInit() {
-    console.log("inside google init");
     gapi.load('auth2', () => {
       this.auth2 = gapi.auth2.init({
         client_id: config.clientIdCmaj,
@@ -50,20 +45,17 @@ export class HomeComponent implements AfterViewInit {
   }
   
   public attachSignin(element) {
-    console.log("inside attach signin");
     this.auth2.attachClickHandler(element, {},
       (googleUser) => {
         let profile = googleUser.getBasicProfile();
+        const idToken = googleUser.getAuthResponse().id_token;
         const accessToken = googleUser.getAuthResponse().access_token;
         //console.log('ID Token || ' + googleUser.getAuthResponse().id_token);
-        //console.log('Access Token || ' + googleUser.getAuthResponse().access_token);
-        //console.log(accessToken);
-        //console.log('ID: ' + profile.getId());
-        //console.log('Name: ' + profile.getName());
-        //console.log('Image URL: ' + profile.getImageUrl());
-        //console.log('Email: ' + profile.getEmail());
+        //console.log('Access Token || ' + accessToken);
 
-        this.router.navigate(['/enterkey'], {queryParams: {token: accessToken}});
+        this.zone.run( () => {
+          this.router.navigate(['/enterkey'], {queryParams: {token: accessToken}});
+        });
 
     }, function (error) {
         console.log(JSON.stringify(error, undefined, 2));

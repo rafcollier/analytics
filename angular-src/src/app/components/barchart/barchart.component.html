@@ -1,140 +1,95 @@
-<div class = "d3-chart" id = "chart1" #chart1></div>
+<div *ngIf="showDataNews">
 
-<div class = "flex-container1">
-  <div class = "flex-item1">
-    <h6 class="grey-font">Select webpage to view analytics</h6>
-  </div>
-</div>
-
-<div class = "flex-container1">
-
-  <div class = "flex-item2">
-    <div *ngIf='inputAll["views"][0]["name"]'>
-      <button (click)="onButtonOneClick()" class="btn btn-primary btn-lg"> {{ inputAll["views"][0]["name"] }} </button>
-    </div>
-  </div>
-
-  <div class = "flex-item2">
-    <div *ngIf='inputAll["views"][1]["name"]'>
-      <button (click)="onButtonTwoClick()" class="btn btn-primary btn-lg"> {{ inputAll["views"][1]["name"] }} </button>
-    </div>
-  </div>
-
-  <div class = "flex-item2">
-    <div *ngIf='inputAll["views"][2]["name"]'>
-      <button (click)="onButtonThreeClick()" class="btn btn-primary btn-lg"> {{ inputAll["views"][2]["name"] }} </button>
-    </div>
-  </div>
-
-  <div class = "flex-item2">
-    <div *ngIf='inputAll["views"][3]["name"]'>
-      <button (click)="onButtonFourClick()" class="btn btn-primary btn-lg"> {{ inputAll["views"][3]["name"] }} </button>
-    </div>
-  </div>
-
-  <div class = "flex-item2">
-    <div *ngIf='inputAll["views"][4]["name"]'>
-      <button (click)="onButtonFiveClick()" class="btn btn-primary btn-lg"> {{ inputAll["views"][4]["name"] }} </button>
-    </div>
-  </div>
-
-</div>
-
-
-<div *ngIf="showData">
-
-  <div class = "flex-container1">
-    <div class = "flex-item1" id="barchart1">
-    </div>
-  </div>
-
+  <hr>
   <div class = "flex-container1">
     <div class = "flex-item1">
-      <h6 class="grey-font">Total pageviews this month and 5 previous months (thousands)</h6>
+      <h2>CMAJ News - Top Sources</h2>
+    </div>
+  </div>
+  <hr>
+
+   <div class = "flex-container1">
+    <div class = "flex-item1" id="chartTopSourcesNews"> 
+      <div class = "d3-chart" id = "chartTopSourcesNews" #chartTopSourcesNews></div>
+    </div>
+    <div class = "flex-item2">
+      <div *ngFor="let topSource of topSources; let i = index">
+        <div><p [style.color]="topSource.color"> {{ topSource.source }} - {{ topSource.views }}  </p></div>
+      </div>
     </div>
   </div>
 
   <hr>
-
   <div class = "flex-container1">
     <div class = "flex-item1">
-      <h3>Top Pages This Month</h3>
+      <h2>CMAJ News - Monthly Pageviews</h2>
     </div>
   </div>
+  <hr>
+
+  <div class = "flex-container1">
+    <div class = "flex-item1" id="chartTopPageviewsNews"> 
+      <div class = "d3-chart" id = "chartTopPageviewsNews" #chartTopPageviewsNews></div>
+    </div>
+  </div>
+
+
+  <hr>
+  <div class = "flex-container1">
+    <div class = "flex-item1">
+      <h2>CMAJ News - Top Devices</h2>
+    </div>
+  </div>
+  <hr>
+
+  <div class = "flex-container1">
+    <div class = "flex-item1" id="chartTopDevicesNews"> 
+      <div class = "d3-chart" id = "chartTopDevicesNews" #chartTopDevicesNews></div>
+    </div>
+    <div class = "flex-item2">
+      <div *ngFor="let topDevice of topDevices; let i = index">
+        <div><p [style.color]="topDevice.color"> {{ topDevice.device }} - {{ topDevice.views }}  </p></div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+  <div class = "flex-container1">
+    <div class = "flex-item1">
+      <h2>CMAJ News - Top Pages</h2>
+    </div>
+  </div>
+  <hr>
 
   <div class = "flex-container1">
     <div class = "flex-item2">
       <div *ngFor="let topPage of topPages; let i = index">
-        <h6>{{ topPage.url }} <span class="blue-font"> ({{ topPage.views }} Pageviews) </span> </h6>
+        <div><p><span class="blue-font"> {{ topPage.views }} </span></p></div>
+        <div><p>{{ topPage.url }}</p></div>
       </div>
     </div>
   </div>
+
 
   <hr>
-
   <div class = "flex-container1">
     <div class = "flex-item1">
-      <h3>Top Sources This Month</h3>
+      <h2>CMAJ News - Top Countries</h2>
     </div>
   </div>
-
-  
-
-  <div class = "flex-container1">
-    <div class = "flex-item2">
-      <div *ngFor="let topSource of topSources; let i = index">
-        <h6>{{ topSource.source }} <span class="blue-font"> ({{ topSource.views }} Pageviews) </span> </h6>
-      </div>
-    </div>
-  </div> 
-
-  <hr>
-  
-
-  <div class = "flex-container1">
-    <div class = "flex-item1">
-      <h3>Devices This Month</h3>
-    </div>
-  </div>
-
-  <div class = "flex-container1">
-    <div class = "flex-item2">
-      <div *ngFor="let device of devices; let i = index">
-        <h6>{{ device.device }} <span class="blue-font"> ({{ device.views }} Pageviews) </span> </h6>
-      </div>
-    </div>
-  </div>
-
   <hr>
 
+
   <div class = "flex-container1">
-    <div class = "flex-item1">
-      <h3>Top Countries This Month</h3>
+    <div class = "flex-item1" id="chartTopCountriesNews"> 
+      <div class = "d3-chart" id = "chartTopCountriesNews" #chartTopCountriesNews></div>
     </div>
-  </div>
-
-  
-
-  <div class = "flex-container1">
     <div class = "flex-item2">
-      <div *ngFor="let topCountry of topCountrys; let i = index">
-        <h6>{{ topCountry.country }} <span class="blue-font"> ({{ topCountry.views }} Pageviews) </span> </h6>
+      <div *ngFor="let topCountry of topCountries; let i = index">
+        <div><p [style.color]="topCountry.color"> {{ topCountry.country }} - {{ topCountry.views }}  </p></div>
       </div>
     </div>
   </div>
-
- 
-
-
 
 </div>
-
-
-
-
-
-
-
-
-
 

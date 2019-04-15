@@ -15,21 +15,23 @@
     "@types/gapi.auth2": "0.0.37",
     "angularfire2": "^4.0.0-rc.0",
     "bcryptjs": "*",
-    "body-parser": "*",
+    "body-parser": "^1.18.3",
+    "bootstrap": "^4.3.1",
+    "bootswatch": "^4.3.1",
     "cors": "*",
-    "express": "*",
-    "firebase": "^4.0.0",
-    "googleapis": "*",
+    "express": "^4.16.4",
+    "firebase": "^5.9.4",
+    "googleapis": "^39.2.0",
     "install": "^0.10.1",
-    "jsonwebtoken": "*",
-    "mongoose": "*",
-    "npm": "^4.6.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.5.1",
+    "npm": "^6.9.0",
     "passport": "*",
-    "passport-jwt": "*"
+    "passport-jwt": "^4.0.0"
   },
   "author": "Roger Collier",
   "license": "ISC",
   "devDependencies": {
-    "@angular/cli": "^1.0.0"
+    "@angular/cli": "^7.3.8"
   }
 }

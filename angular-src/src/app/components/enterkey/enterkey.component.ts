@@ -1,11 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-//NOTE this was imported manually
+import { Component, OnInit, ElementRef, AfterViewInit, VERSION, NgZone } from '@angular/core';
 import {ValidateService} from '../../services/validate.service';
-import {FlashMessagesService} from 'angular2-flash-messages';
 import {AuthService} from '../../services/auth.service';
 import {Router} from '@angular/router';
 import {ActivatedRoute} from '@angular/router';
-import { tokenNotExpired } from 'angular2-jwt';
+import {tokenNotExpired} from 'angular2-jwt';
 
 @Component({
   selector: 'app-enterkey',
@@ -13,28 +11,21 @@ import { tokenNotExpired } from 'angular2-jwt';
   styleUrls: ['./enterkey.component.css']
 })
 export class EnterkeyComponent implements OnInit {
-  //clientID: String;
-  //viewID1: String;
-  //viewID2: String;
-  //viewID3: String;
-  //viewID4: String;
-  //viewID5: String;
   startDate: String;
   endDate: String;
   token: String;
   private sub: any;
 
   constructor(
-      private validateService: ValidateService, 
-      private flashMessage: FlashMessagesService,
-      private authService: AuthService,
-      private router: Router,
-      private route: ActivatedRoute
-    ) { }
+    private validateService: ValidateService, 
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private zone: NgZone
+  ) { }
 
   ngOnInit() {
   }
-
 
   onIdSubmit(){
 
@@ -47,27 +38,18 @@ export class EnterkeyComponent implements OnInit {
     });
 
     const clientInfo = {
-      //clientID: this.clientID,
-      //viewID1: this.viewID1,
-      //viewID2: this.viewID2,
-      //viewID3: this.viewID3,
-      //viewID4: this.viewID4,
-      //viewID5: this.viewID5,
       startDate: this.startDate,
       endDate: this.endDate
     }
-
-    this.router.navigate(['/barchart'], {queryParams: {
-      token: this.token, 
-      //clientID: clientInfo.clientID,
-      //viewID1: clientInfo.viewID1,
-      //viewID2: clientInfo.viewID2,
-      //viewID3: clientInfo.viewID3,
-      //viewID4: clientInfo.viewID4,
-      //viewID5: clientInfo.viewID5,
-      startDate: clientInfo.startDate,
-      endDate: clientInfo.endDate
-      }
-    }); 
+    
+    this.zone.run( () => {
+      this.router.navigate(['/barchart'], {queryParams: {
+        token: this.token, 
+        startDate: clientInfo.startDate,
+        endDate: clientInfo.endDate
+        }
+      }); 
+    });
   }
 }
+

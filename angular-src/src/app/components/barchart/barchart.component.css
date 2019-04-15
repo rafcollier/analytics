@@ -1,3 +1,44 @@
+p {
+  font-size: 18px;
+  font-family: sans-serif;
+}
+
+h2 {
+  font-size: 28px;
+  font-family: sans-serif;
+  color: black;
+}
+
+.button-style {
+  background-color: #fff;
+}
+
+.arc text {
+  font: 10px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+
+.black-border {
+  border:1px solid black;
+}
+
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr, 1fr));
+  background-color: #eee;
+}
+
+.box {
+  background-color: #ddd;
+  border-radius: 1px;
+  padding: 10px;
+}
+
+
 .flex-container {
   padding: 0;
   margin: 0;
@@ -13,6 +54,15 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
+}
+
+.flex-container2 {
+  display: flex;
+  flex-direction: row;
+  align-items: right;
+  justify-content: right;
+  flex-wrap: wrap;
 }
 
 .flex-item1 {
@@ -27,8 +77,8 @@
 
 .flex-item2 {
   padding: 5px;
-  margin: 10px;
-  color: white;
+  margin: 5px;
+  color: black;
   font-weight: bold;
   font-size: 3em;
   text-align: left;
